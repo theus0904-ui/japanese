@@ -8,663 +8,489 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>日本語 마스터</title>
 <link rel="manifest" href="manifest.json">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&family=Noto+Serif+JP:wght@400;700&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0f0f1a;
-    --surface: #1a1a2e;
-    --surface2: #232340;
-    --accent: #e94560;
-    --accent2: #f5a623;
-    --accent3: #4ecdc4;
-    --text: #f0f0f0;
-    --text2: #a0a0c0;
-    --border: rgba(255,255,255,0.08);
-    --shadow: 0 8px 32px rgba(0,0,0,0.4);
-    --radius: 16px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body {
-    font-family: 'Noto Sans JP', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  /* NAV */
-  .nav {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    display: flex;
-    z-index: 100;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .nav-btn {
-    flex: 1; display: flex; flex-direction: column; align-items: center;
-    padding: 10px 4px 8px;
-    border: none; background: none; color: var(--text2);
-    font-size: 10px; font-family: inherit; cursor: pointer;
-    transition: color 0.2s;
-    gap: 4px;
-  }
-  .nav-btn.active { color: var(--accent); }
-  .nav-btn .icon { font-size: 22px; }
+:root {
+  --bg: #0f0f1a;
+  --surface: #1a1a2e;
+  --surface2: #232340;
+  --accent: #e94560;
+  --accent2: #f5a623;
+  --accent3: #4ecdc4;
+  --text: #f0f0f0;
+  --text2: #a0a0c0;
+  --border: rgba(255,255,255,0.08);
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  --r: 16px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
-  /* SCREENS */
-  .screen { display: none; padding: 20px 16px 90px; min-height: 100vh; }
-  .screen.active { display: block; }
+/* ── BOTTOM NAV ── */
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;border:none;background:none;color:var(--text2);font-size:10px;font-family:inherit;cursor:pointer;transition:color .2s;gap:4px}
+.nav-btn.active{color:var(--accent)}
+.nav-btn .icon{font-size:22px}
 
-  /* HEADER */
-  .header {
-    text-align: center; padding: 30px 0 20px;
-  }
-  .header h1 { font-family: 'Noto Serif JP', serif; font-size: 28px; color: var(--accent); }
-  .header p { color: var(--text2); font-size: 13px; margin-top: 6px; }
+/* ── SCREENS (menu pages) ── */
+.screen{display:none;padding:20px 16px 90px;min-height:100vh}
+.screen.active{display:block}
 
-  /* CARDS */
-  .card {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 18px;
-    margin-bottom: 14px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-  }
-  .card-title { font-size: 14px; color: var(--text2); margin-bottom: 12px; font-weight: 400; }
+/* ── FULLSCREEN PANEL (study/test mode) ── */
+.panel{display:none;position:fixed;inset:0;background:var(--bg);z-index:200;flex-direction:column;overflow-y:auto}
+.panel.active{display:flex}
+.panel-header{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-shrink:0}
+.panel-back{background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;padding:4px 8px;border-radius:8px}
+.panel-back:active{background:var(--surface2)}
+.panel-title{font-size:16px;font-weight:700;flex:1}
+.panel-score{background:var(--accent2);color:#1a1a1a;border-radius:20px;padding:4px 14px;font-size:13px;font-weight:700}
+.panel-body{flex:1;padding:16px;display:flex;flex-direction:column;gap:14px;padding-bottom:30px}
 
-  /* BUTTONS */
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center;
-    padding: 12px 24px; border-radius: 12px; border: none;
-    font-family: inherit; font-size: 15px; font-weight: 700;
-    cursor: pointer; transition: all 0.2s; width: 100%; margin-bottom: 10px;
-  }
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
-  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-accent2 { background: var(--accent2); color: #1a1a1a; }
-  .btn-accent3 { background: var(--accent3); color: #1a1a1a; }
-  .btn-sm { padding: 8px 16px; font-size: 13px; width: auto; margin-bottom: 0; border-radius: 8px; }
+/* ── TIMER BAR ── */
+.timer-bar{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;flex-shrink:0}
+.timer-fill{height:100%;background:var(--accent);transition:width 1s linear}
 
-  /* GOJUUON TABLE */
-  .gojuuon-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-  .tab-btn {
-    flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--surface2); color: var(--text2); font-family: inherit;
-    font-size: 14px; cursor: pointer; transition: all 0.2s;
-  }
-  .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+/* ── FLASH CARD ── */
+.flash-card{background:var(--surface);border-radius:24px;padding:50px 20px;text-align:center;border:1px solid var(--border);flex-shrink:0}
+.flash-char{font-size:100px;line-height:1;margin-bottom:8px}
+.flash-char.kanji-font{font-family:'Noto Serif JP',serif}
+.flash-sub{color:var(--text2);font-size:14px}
 
-  .kana-table { width: 100%; border-collapse: collapse; }
-  .kana-table th {
-    background: var(--surface2); color: var(--accent2);
-    padding: 8px 4px; font-size: 11px; text-align: center;
-    border: 1px solid var(--border);
-  }
-  .kana-table td {
-    text-align: center; padding: 8px 4px;
-    border: 1px solid var(--border);
-    font-size: 18px; line-height: 1.2;
-    cursor: pointer; transition: background 0.15s;
-  }
-  .kana-table td:active { background: var(--surface2); }
-  .kana-table td small { display: block; font-size: 10px; color: var(--text2); margin-top: 2px; }
-  .kana-table td.empty { background: var(--bg); }
+/* ── ANSWER BOX ── */
+.answer-box{background:var(--surface2);border-radius:14px;padding:18px;font-size:22px;color:var(--accent3);min-height:64px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);text-align:center}
 
-  /* TEST SCREEN */
-  .test-config { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-  .chip {
-    padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
-    background: var(--surface2); color: var(--text2); font-family: inherit;
-    font-size: 13px; cursor: pointer; transition: all 0.2s;
-  }
-  .chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+/* ── ACTION BUTTONS ── */
+.action-row{display:flex;gap:10px;flex-shrink:0}
+.action-row .btn{flex:1;margin-bottom:0}
 
-  .test-card {
-    background: var(--surface);
-    border-radius: 20px;
-    padding: 40px 20px;
-    text-align: center;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    margin-bottom: 16px;
-  }
-  .test-char { font-size: 80px; line-height: 1; margin-bottom: 10px; }
-  .test-label { color: var(--text2); font-size: 13px; margin-bottom: 20px; }
-  .answer-box {
-    background: var(--surface2);
-    border-radius: 12px; padding: 16px;
-    font-size: 24px; color: var(--accent3);
-    min-height: 60px; display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--border);
-    margin-bottom: 16px;
-  }
-  .timer-bar {
-    height: 4px; background: var(--surface2); border-radius: 2px;
-    overflow: hidden; margin-bottom: 16px;
-  }
-  .timer-fill {
-    height: 100%; background: var(--accent);
-    transition: width 1s linear;
-  }
-  .score-badge {
-    display: inline-block;
-    background: var(--accent2); color: #1a1a1a;
-    border-radius: 20px; padding: 4px 14px;
-    font-size: 13px; font-weight: 700;
-    margin-bottom: 16px;
-  }
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:14px 24px;border-radius:14px;border:none;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;width:100%;margin-bottom:10px}
+.btn:active{transform:scale(.97);opacity:.9}
+.btn-primary{background:var(--accent);color:white}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-success{background:var(--accent3);color:#1a1a1a}
+.btn-warn{background:var(--accent2);color:#1a1a1a}
+.btn-sm{padding:8px 16px;font-size:13px;width:auto;margin-bottom:0;border-radius:10px}
 
-  /* CANVAS for drawing */
-  .canvas-wrap {
-    position: relative;
-    background: var(--surface2);
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    margin-bottom: 14px;
-  }
-  canvas { display: block; touch-action: none; }
-  .canvas-toolbar {
-    display: flex; gap: 8px; padding: 10px;
-    background: var(--surface); border-top: 1px solid var(--border);
-  }
-  .color-dot {
-    width: 28px; height: 28px; border-radius: 50%;
-    border: 2px solid transparent; cursor: pointer; transition: transform 0.15s;
-  }
-  .color-dot.active { border-color: white; transform: scale(1.2); }
+/* ── CANVAS ── */
+.canvas-wrap{background:var(--surface2);border-radius:16px;overflow:hidden;border:1px solid var(--border);flex-shrink:0}
+canvas{display:block;touch-action:none;width:100%}
+.canvas-toolbar{display:flex;gap:8px;padding:10px;background:var(--surface);border-top:1px solid var(--border);align-items:center}
+.color-dot{width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s;flex-shrink:0}
+.color-dot.active{border-color:white;transform:scale(1.2)}
 
-  /* KANJI */
-  .level-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
-  .level-btn {
-    padding: 12px 8px; border-radius: 12px; border: 1px solid var(--border);
-    background: var(--surface2); color: var(--text); font-family: inherit;
-    font-size: 13px; cursor: pointer; transition: all 0.2s; text-align: center;
-  }
-  .level-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-  .level-btn small { display: block; color: inherit; opacity: 0.7; font-size: 11px; }
+/* ── KANJI STUDY CARD ── */
+.kanji-study-card{background:var(--surface);border-radius:24px;padding:40px 20px;text-align:center;border:1px solid var(--border);flex-shrink:0}
+.kanji-big{font-family:'Noto Serif JP',serif;font-size:110px;line-height:1;margin-bottom:12px}
+.kanji-reading{font-size:22px;color:var(--accent3);margin-bottom:6px}
+.kanji-meaning{font-size:16px;color:var(--text2)}
+.kanji-grade-badge{font-size:12px;color:var(--accent2);margin-bottom:16px}
 
-  .kanji-card {
-    background: var(--surface);
-    border-radius: 20px; padding: 30px 20px;
-    text-align: center; border: 1px solid var(--border);
-    margin-bottom: 14px;
-  }
-  .kanji-char { font-family: 'Noto Serif JP', serif; font-size: 90px; line-height: 1; margin-bottom: 8px; }
-  .kanji-reading { font-size: 20px; color: var(--accent3); margin-bottom: 6px; }
-  .kanji-meaning { font-size: 16px; color: var(--text2); }
-  .kanji-grade { font-size: 12px; color: var(--accent2); margin-bottom: 16px; }
+/* ── TRACE CARD ── */
+.trace-canvas-wrap{position:relative;background:var(--surface2);border-radius:16px;overflow:hidden;border:1px solid var(--border);flex-shrink:0}
+.trace-ghost{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Noto Serif JP',serif;font-size:160px;color:rgba(255,255,255,0.07);pointer-events:none;z-index:1;line-height:1;user-select:none}
+.trace-canvas-wrap canvas{position:relative;z-index:2}
 
-  .kanji-trace-wrap {
-    position: relative; display: inline-block;
-    margin-bottom: 14px;
-  }
-  .kanji-trace-ghost {
-    position: absolute; top: 0; left: 0;
-    font-family: 'Noto Serif JP', serif;
-    font-size: 140px; line-height: 1;
-    color: rgba(255,255,255,0.08);
-    pointer-events: none;
-    width: 100%; text-align: center;
-  }
+/* ── KANA TABLE ── */
+.kana-table{width:100%;border-collapse:collapse}
+.kana-table th{background:var(--surface2);color:var(--accent2);padding:8px 4px;font-size:11px;text-align:center;border:1px solid var(--border)}
+.kana-table td{text-align:center;padding:8px 4px;border:1px solid var(--border);font-size:18px;line-height:1.2}
+.kana-table td small{display:block;font-size:10px;color:var(--text2);margin-top:2px}
+.kana-table td.empty{background:var(--bg)}
 
-  /* VOCABULARY */
-  .vocab-input-wrap { display: flex; gap: 8px; margin-bottom: 14px; }
-  .vocab-input {
-    flex: 1; padding: 12px 14px; border-radius: 12px;
-    border: 1px solid var(--border); background: var(--surface2);
-    color: var(--text); font-family: inherit; font-size: 15px;
-    outline: none;
-  }
-  .vocab-input:focus { border-color: var(--accent); }
-  .vocab-list { display: flex; flex-direction: column; gap: 8px; }
-  .vocab-item {
-    background: var(--surface2); border-radius: 12px;
-    padding: 14px 16px; display: flex; align-items: center;
-    border: 1px solid var(--border); gap: 12px;
-  }
-  .vocab-jp { font-size: 20px; min-width: 60px; }
-  .vocab-info { flex: 1; }
-  .vocab-reading { font-size: 13px; color: var(--accent3); }
-  .vocab-meaning { font-size: 14px; color: var(--text2); }
-  .vocab-del { background: none; border: none; color: var(--accent); font-size: 20px; cursor: pointer; padding: 4px; }
+/* ── MENU PAGE ELEMENTS ── */
+.header{text-align:center;padding:30px 0 20px}
+.header h1{font-family:'Noto Serif JP',serif;font-size:28px;color:var(--accent)}
+.header p{color:var(--text2);font-size:13px;margin-top:6px}
+.card{background:var(--surface);border-radius:var(--r);padding:18px;margin-bottom:14px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.card-title{font-size:13px;color:var(--text2);margin-bottom:12px}
+.section-title{font-size:12px;font-weight:700;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;margin-top:4px}
+.chip{padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-family:inherit;font-size:13px;cursor:pointer;transition:all .2s;display:inline-block;margin:3px}
+.chip.active{background:var(--accent);color:white;border-color:var(--accent)}
+.level-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.level-btn{padding:12px 8px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;font-size:13px;cursor:pointer;transition:all .2s;text-align:center}
+.level-btn.active{background:var(--accent);color:white;border-color:var(--accent)}
+.level-btn small{display:block;opacity:.7;font-size:11px}
+.gojuuon-tabs{display:flex;gap:8px;margin-bottom:14px}
+.tab-btn{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-family:inherit;font-size:14px;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--accent);color:white;border-color:var(--accent)}
+select{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-family:inherit;font-size:14px;outline:none;cursor:pointer}
+.vocab-input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;font-size:15px;outline:none;margin-bottom:10px}
+.vocab-input:focus{border-color:var(--accent)}
+.vocab-list{display:flex;flex-direction:column;gap:8px}
+.vocab-item{background:var(--surface2);border-radius:12px;padding:14px 16px;display:flex;align-items:center;border:1px solid var(--border);gap:12px}
+.vocab-jp{font-size:20px;min-width:60px}
+.vocab-info{flex:1}
+.vocab-reading{font-size:13px;color:var(--accent3)}
+.vocab-meaning{font-size:14px;color:var(--text2)}
+.vocab-del{background:none;border:none;color:var(--accent);font-size:20px;cursor:pointer;padding:4px}
+.nav-progress{font-size:13px;color:var(--text2);margin-left:auto}
 
-  /* SELECT */
-  select {
-    background: var(--surface2); color: var(--text);
-    border: 1px solid var(--border); border-radius: 10px;
-    padding: 8px 12px; font-family: inherit; font-size: 14px;
-    outline: none; cursor: pointer;
-  }
+/* ── RESULT PANEL ── */
+.result-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;padding:40px 20px}
+.result-emoji{font-size:72px;margin-bottom:16px}
+.result-pct{font-size:64px;font-weight:700;color:var(--accent);margin-bottom:6px}
+.result-label{font-size:15px;color:var(--text2);margin-bottom:32px}
 
-  /* MODAL */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7); z-index: 200;
-    align-items: center; justify-content: center; padding: 20px;
-  }
-  .modal-overlay.show { display: flex; }
-  .modal {
-    background: var(--surface); border-radius: 20px;
-    padding: 28px 24px; width: 100%; max-width: 360px;
-    border: 1px solid var(--border); box-shadow: var(--shadow);
-    text-align: center;
-  }
-  .modal h2 { font-size: 22px; margin-bottom: 8px; }
-  .modal p { color: var(--text2); font-size: 14px; margin-bottom: 20px; }
-
-  /* RESULT */
-  .result-emoji { font-size: 60px; margin-bottom: 10px; }
-  .result-score { font-size: 48px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
-  .result-label { color: var(--text2); font-size: 14px; margin-bottom: 20px; }
-
-  /* SECTION TITLE */
-  .section-title {
-    font-size: 12px; font-weight: 700; color: var(--text2);
-    letter-spacing: 2px; text-transform: uppercase;
-    margin-bottom: 10px; margin-top: 4px;
-  }
-
-  .row { display: flex; gap: 8px; }
-  .row .btn { flex: 1; margin-bottom: 0; }
-
-  /* PROGRESS */
-  .progress-ring-wrap { display: flex; justify-content: center; margin: 10px 0; }
-
-  /* HIDDEN */
-  .hidden { display: none !important; }
-
-  /* Animations */
-  @keyframes pop { 0%{transform:scale(0.8);opacity:0} 80%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
-  .pop { animation: pop 0.3s ease; }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
-  .shake { animation: shake 0.3s ease; }
-
-  .correct-flash { background: rgba(78,205,196,0.15) !important; }
-  .wrong-flash { background: rgba(233,69,96,0.15) !important; }
+/* ── MISC ── */
+.hidden{display:none!important}
+.row{display:flex;gap:8px}
+.row .btn{flex:1;margin-bottom:0}
+@keyframes pop{0%{transform:scale(.8);opacity:0}80%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .3s ease}
 </style>
 </head>
 <body>
 
-<!-- ===== SCREEN: HOME ===== -->
-<div class="screen active" id="screen-home">
-  <div class="header">
-    <h1>日本語 마스터</h1>
-    <p>일본어 실력을 키워보세요</p>
-  </div>
+<!-- ════════════════════════════════════
+     MENU SCREENS (bottom nav pages)
+════════════════════════════════════ -->
 
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="header"><h1>日本語 마스터</h1><p>일본어 실력을 키워보세요</p></div>
   <div class="card">
-    <div class="card-title">📊 오늘의 학습</div>
-    <div style="display:flex;gap:12px;text-align:center">
+    <div class="card-title">📊 학습 통계</div>
+    <div style="display:flex;gap:10px;text-align:center">
       <div style="flex:1;background:var(--surface2);border-radius:12px;padding:14px">
         <div style="font-size:28px;font-weight:700;color:var(--accent)" id="home-streak">0</div>
-        <div style="font-size:12px;color:var(--text2)">연속 학습일</div>
+        <div style="font-size:11px;color:var(--text2)">연속 학습일</div>
       </div>
       <div style="flex:1;background:var(--surface2);border-radius:12px;padding:14px">
         <div style="font-size:28px;font-weight:700;color:var(--accent2)" id="home-total">0</div>
-        <div style="font-size:12px;color:var(--text2)">총 학습 문제</div>
+        <div style="font-size:11px;color:var(--text2)">총 학습</div>
       </div>
       <div style="flex:1;background:var(--surface2);border-radius:12px;padding:14px">
         <div style="font-size:28px;font-weight:700;color:var(--accent3)" id="home-correct">0%</div>
-        <div style="font-size:12px;color:var(--text2)">정답률</div>
+        <div style="font-size:11px;color:var(--text2)">정답률</div>
       </div>
     </div>
   </div>
-
   <div class="section-title">빠른 시작</div>
-  <button class="btn btn-primary" onclick="goScreen('screen-kana')">🎌 히라가나·카타가나 학습</button>
-  <button class="btn btn-accent2" onclick="goScreen('screen-kanji')">漢 한자 학습</button>
-  <button class="btn btn-accent3" onclick="goScreen('screen-vocab')">📖 내 단어장</button>
+  <button class="btn btn-primary" onclick="goScreen('screen-kana')">🎌 히라가나 · 카타카나</button>
+  <button class="btn btn-warn" onclick="goScreen('screen-kanji')">漢 한자 학습</button>
+  <button class="btn btn-success" onclick="goScreen('screen-vocab')">📖 내 단어장</button>
 </div>
 
-<!-- ===== SCREEN: KANA ===== -->
+<!-- KANA MENU -->
 <div class="screen" id="screen-kana">
-  <div class="header">
-    <h1>히라가나·카타카나</h1>
-  </div>
+  <div class="header"><h1>히라가나 · 카타카나</h1></div>
 
-  <!-- Sub menu -->
-  <div class="gojuuon-tabs">
-    <button class="tab-btn active" onclick="setKanaSection('table')">50음도</button>
-    <button class="tab-btn" onclick="setKanaSection('test-flash')">플래시</button>
-    <button class="tab-btn" onclick="setKanaSection('test-write')">쓰기</button>
-  </div>
-
-  <!-- TABLE -->
-  <div id="kana-table-section">
+  <div class="section-title">50음도 보기</div>
+  <div class="card">
     <div class="gojuuon-tabs">
       <button class="tab-btn active" id="tab-hira" onclick="showKanaTable('hira')">히라가나</button>
       <button class="tab-btn" id="tab-kata" onclick="showKanaTable('kata')">카타카나</button>
     </div>
-    <div class="card" style="overflow-x:auto;padding:10px">
-      <table class="kana-table" id="kana-table-el"></table>
-    </div>
+    <div style="overflow-x:auto"><table class="kana-table" id="kana-table-el"></table></div>
   </div>
 
-  <!-- FLASH TEST -->
-  <div id="kana-test-flash-section" class="hidden">
-    <div class="card">
-      <div class="card-title">테스트 설정</div>
-      <div class="test-config" id="kana-type-chips">
-        <div class="chip active" data-val="hira" onclick="toggleChip(this,'kana-type')">히라가나</div>
-        <div class="chip active" data-val="kata" onclick="toggleChip(this,'kana-type')">카타카나</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <span style="font-size:13px;color:var(--text2)">표시 시간:</span>
-        <select id="kana-flash-time">
-          <option value="2">2초</option>
-          <option value="3" selected>3초</option>
-          <option value="5">5초</option>
-          <option value="7">7초</option>
-        </select>
-      </div>
-      <button class="btn btn-primary" onclick="startKanaFlash()">테스트 시작</button>
+  <div class="section-title">테스트</div>
+  <div class="card">
+    <div class="card-title">플래시 테스트 — 글자 보고 읽기</div>
+    <div id="kana-flash-chips" style="margin-bottom:10px">
+      <span class="chip active" data-val="hira">히라가나</span>
+      <span class="chip active" data-val="kata">카타카나</span>
     </div>
-
-    <div id="kana-flash-game" class="hidden">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <span class="score-badge" id="kana-flash-score">0 / 0</span>
-        <button class="btn btn-secondary btn-sm" onclick="stopKanaFlash()">종료</button>
-      </div>
-      <div class="timer-bar"><div class="timer-fill" id="kana-timer-fill" style="width:100%"></div></div>
-      <div class="test-card" id="kana-flash-card">
-        <div class="test-char" id="kana-flash-char">あ</div>
-        <div class="test-label">읽어보세요</div>
-      </div>
-      <div class="answer-box hidden" id="kana-flash-answer"></div>
-      <div class="row hidden" id="kana-flash-btns">
-        <button class="btn btn-secondary" onclick="kanaFlashNext(false)">❌ 틀림</button>
-        <button class="btn btn-accent3" onclick="kanaFlashNext(true)">✅ 맞음</button>
-      </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:13px;color:var(--text2)">표시 시간</span>
+      <select id="kana-flash-time"><option value="2">2초</option><option value="3" selected>3초</option><option value="5">5초</option><option value="7">7초</option></select>
     </div>
+    <button class="btn btn-primary" onclick="startKanaFlash()">▶ 시작</button>
   </div>
-
-  <!-- WRITE TEST -->
-  <div id="kana-test-write-section" class="hidden">
-    <div class="card">
-      <div class="card-title">쓰기 테스트 설정</div>
-      <div class="test-config" id="kana-write-chips">
-        <div class="chip active" data-val="hira" onclick="toggleChip(this,'kana-write')">히라가나</div>
-        <div class="chip active" data-val="kata" onclick="toggleChip(this,'kana-write')">카타카나</div>
-      </div>
-      <button class="btn btn-primary" onclick="startKanaWrite()">쓰기 테스트 시작</button>
+  <div class="card">
+    <div class="card-title">쓰기 테스트 — 발음 보고 글자 쓰기</div>
+    <div id="kana-write-chips" style="margin-bottom:12px">
+      <span class="chip active" data-val="hira">히라가나</span>
+      <span class="chip active" data-val="kata">카타카나</span>
     </div>
-    <div id="kana-write-game" class="hidden">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <span class="score-badge" id="kana-write-score">0 / 0</span>
-        <button class="btn btn-secondary btn-sm" onclick="stopKanaWrite()">종료</button>
-      </div>
-      <div class="test-card">
-        <div style="font-size:15px;color:var(--text2);margin-bottom:6px">이 발음을 써보세요</div>
-        <div class="test-char" id="kana-write-prompt" style="color:var(--accent2)">あ</div>
-      </div>
-      <div class="canvas-wrap">
-        <canvas id="canvas-kana" width="360" height="200"></canvas>
-        <div class="canvas-toolbar">
-          <div class="color-dot active" style="background:#f0f0f0" onclick="setColor('#f0f0f0',this)"></div>
-          <div class="color-dot" style="background:#e94560" onclick="setColor('#e94560',this)"></div>
-          <div class="color-dot" style="background:#4ecdc4" onclick="setColor('#4ecdc4',this)"></div>
-          <div style="flex:1"></div>
-          <button class="btn btn-secondary btn-sm" onclick="clearCanvas('canvas-kana')">지우기</button>
-        </div>
-      </div>
-      <div class="answer-box hidden" id="kana-write-answer"></div>
-      <div class="row">
-        <button class="btn btn-secondary" onclick="showKanaWriteAnswer()">정답 보기</button>
-        <button class="btn btn-primary" onclick="nextKanaWrite()">다음 →</button>
-      </div>
-    </div>
+    <button class="btn btn-success" onclick="startKanaWrite()">▶ 시작</button>
   </div>
 </div>
 
-<!-- ===== SCREEN: KANJI ===== -->
+<!-- KANJI MENU -->
 <div class="screen" id="screen-kanji">
-  <div class="header">
-    <h1>한자 학습</h1>
-  </div>
+  <div class="header"><h1>한자 학습</h1></div>
 
-  <div class="gojuuon-tabs">
-    <button class="tab-btn active" onclick="setKanjiSection('study')">암기</button>
-    <button class="tab-btn" onclick="setKanjiSection('trace')">따라쓰기</button>
-    <button class="tab-btn" onclick="setKanjiSection('test-flash')">플래시</button>
-    <button class="tab-btn" onclick="setKanjiSection('test-write')">쓰기</button>
-  </div>
+  <div class="section-title">학년 선택</div>
+  <div class="level-grid" id="kanji-grade-grid"></div>
+  <label style="font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px;margin-bottom:16px">
+    <input type="checkbox" id="kanji-cumulative"> 누적 학습 (선택 학년까지 전부)
+  </label>
 
-  <!-- STUDY -->
-  <div id="kanji-study-section">
-    <div class="card">
-      <div class="card-title">학년 선택</div>
-      <div class="level-grid" id="kanji-level-grid"></div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <label style="font-size:13px;color:var(--text2)">
-          <input type="checkbox" id="kanji-cumulative"> 누적 학습
-        </label>
-      </div>
-    </div>
-    <div id="kanji-study-card" class="hidden">
-      <div class="kanji-card" id="kanji-card-el">
-        <div class="kanji-grade" id="kanji-card-grade"></div>
-        <div class="kanji-char" id="kanji-card-char">漢</div>
-        <div class="kanji-reading" id="kanji-card-reading"></div>
-        <div class="kanji-meaning" id="kanji-card-meaning"></div>
-      </div>
-      <div class="row">
-        <button class="btn btn-secondary" onclick="prevKanji()">← 이전</button>
-        <button class="btn btn-primary" onclick="nextKanji()">다음 →</button>
-      </div>
-      <div style="text-align:center;margin-top:10px;color:var(--text2);font-size:13px" id="kanji-study-progress"></div>
-    </div>
-  </div>
+  <div class="section-title">학습 모드</div>
+  <button class="btn btn-primary" onclick="startKanjiStudy()">📖 암기 카드</button>
+  <button class="btn btn-secondary" onclick="startKanjiTrace()">✏️ 따라쓰기</button>
+  <button class="btn btn-warn" onclick="startKanjiFlash()">⚡ 플래시 테스트</button>
+  <button class="btn btn-success" onclick="startKanjiWriteTest()">🖊 쓰기 테스트</button>
 
-  <!-- TRACE -->
-  <div id="kanji-trace-section" class="hidden">
-    <div class="card">
-      <div class="card-title">학년 선택 (따라쓰기)</div>
-      <div class="level-grid" id="kanji-trace-level-grid"></div>
-    </div>
-    <div id="kanji-trace-card" class="hidden">
-      <div class="kanji-card">
-        <div class="kanji-grade" id="kanji-trace-grade"></div>
-        <div class="kanji-reading" id="kanji-trace-reading"></div>
-        <div class="kanji-meaning" id="kanji-trace-meaning"></div>
-      </div>
-      <div class="canvas-wrap" style="position:relative">
-        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:140px;font-family:'Noto Serif JP',serif;color:rgba(255,255,255,0.07);pointer-events:none;z-index:1;line-height:1" id="kanji-trace-ghost"></div>
-        <canvas id="canvas-kanji-trace" width="360" height="220" style="position:relative;z-index:2"></canvas>
-        <div class="canvas-toolbar">
-          <div class="color-dot active" style="background:#f0f0f0" onclick="setColor('#f0f0f0',this,'trace')"></div>
-          <div class="color-dot" style="background:#e94560" onclick="setColor('#e94560',this,'trace')"></div>
-          <div style="flex:1"></div>
-          <button class="btn btn-secondary btn-sm" onclick="clearCanvas('canvas-kanji-trace')">지우기</button>
-        </div>
-      </div>
-      <div class="row">
-        <button class="btn btn-secondary" onclick="prevKanjiTrace()">← 이전</button>
-        <button class="btn btn-primary" onclick="nextKanjiTrace()">다음 →</button>
-      </div>
-      <div style="text-align:center;margin-top:10px;color:var(--text2);font-size:13px" id="kanji-trace-progress"></div>
-    </div>
-  </div>
-
-  <!-- KANJI FLASH TEST -->
-  <div id="kanji-test-flash-section" class="hidden">
-    <div class="card">
-      <div class="card-title">학년 선택</div>
-      <div class="level-grid" id="kanji-test-level-grid"></div>
-      <div style="display:flex;align-items:center;gap:10px;margin:10px 0">
-        <span style="font-size:13px;color:var(--text2)">표시 시간:</span>
-        <select id="kanji-flash-time">
-          <option value="3">3초</option>
-          <option value="5" selected>5초</option>
-          <option value="7">7초</option>
-          <option value="10">10초</option>
-        </select>
-      </div>
-      <button class="btn btn-primary" onclick="startKanjiFlash()">테스트 시작</button>
-    </div>
-    <div id="kanji-flash-game" class="hidden">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <span class="score-badge" id="kanji-flash-score">0 / 0</span>
-        <button class="btn btn-secondary btn-sm" onclick="stopKanjiFlash()">종료</button>
-      </div>
-      <div class="timer-bar"><div class="timer-fill" id="kanji-timer-fill" style="width:100%"></div></div>
-      <div class="test-card" id="kanji-flash-card">
-        <div class="kanji-char" id="kanji-flash-char" style="font-family:'Noto Serif JP',serif">漢</div>
-        <div class="test-label">읽어보세요</div>
-      </div>
-      <div class="answer-box hidden" id="kanji-flash-answer"></div>
-      <div class="row hidden" id="kanji-flash-btns">
-        <button class="btn btn-secondary" onclick="kanjiFlashNext(false)">❌ 틀림</button>
-        <button class="btn btn-accent3" onclick="kanjiFlashNext(true)">✅ 맞음</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- KANJI WRITE TEST -->
-  <div id="kanji-test-write-section" class="hidden">
-    <div class="card">
-      <div class="card-title">학년 선택 (쓰기)</div>
-      <div class="level-grid" id="kanji-write-level-grid"></div>
-      <button class="btn btn-primary" onclick="startKanjiWrite()">쓰기 테스트 시작</button>
-    </div>
-    <div id="kanji-write-game" class="hidden">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <span class="score-badge" id="kanji-write-score">0 / 0</span>
-        <button class="btn btn-secondary btn-sm" onclick="stopKanjiWrite()">종료</button>
-      </div>
-      <div class="test-card">
-        <div style="font-size:14px;color:var(--text2);margin-bottom:6px">이 뜻의 한자를 쓰세요</div>
-        <div style="font-size:22px;color:var(--accent2);font-weight:700" id="kanji-write-prompt"></div>
-        <div style="font-size:14px;color:var(--text2);margin-top:4px" id="kanji-write-hint"></div>
-      </div>
-      <div class="canvas-wrap">
-        <canvas id="canvas-kanji-write" width="360" height="200"></canvas>
-        <div class="canvas-toolbar">
-          <div class="color-dot active" style="background:#f0f0f0" onclick="setColor('#f0f0f0',this,'kwrite')"></div>
-          <div class="color-dot" style="background:#e94560" onclick="setColor('#e94560',this,'kwrite')"></div>
-          <div style="flex:1"></div>
-          <button class="btn btn-secondary btn-sm" onclick="clearCanvas('canvas-kanji-write')">지우기</button>
-        </div>
-      </div>
-      <div class="answer-box hidden" id="kanji-write-answer"></div>
-      <div class="row">
-        <button class="btn btn-secondary" onclick="showKanjiWriteAnswer()">정답 보기</button>
-        <button class="btn btn-primary" onclick="nextKanjiWrite()">다음 →</button>
-      </div>
-    </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-top:4px;margin-bottom:4px">
+    <span style="font-size:13px;color:var(--text2)">플래시 표시 시간</span>
+    <select id="kanji-flash-time"><option value="3">3초</option><option value="5" selected>5초</option><option value="7">7초</option><option value="10">10초</option></select>
   </div>
 </div>
 
-<!-- ===== SCREEN: VOCAB ===== -->
+<!-- VOCAB MENU -->
 <div class="screen" id="screen-vocab">
-  <div class="header">
-    <h1>내 단어장</h1>
-    <p>수업에서 배운 단어를 저장하세요</p>
-  </div>
+  <div class="header"><h1>내 단어장</h1><p>수업에서 배운 단어를 저장하세요</p></div>
 
   <div class="gojuuon-tabs">
-    <button class="tab-btn active" onclick="setVocabSection('list')">단어 목록</button>
-    <button class="tab-btn" onclick="setVocabSection('test')">단어 테스트</button>
+    <button class="tab-btn active" onclick="setVocabTab('list')">단어 목록</button>
+    <button class="tab-btn" onclick="setVocabTab('test')">테스트</button>
   </div>
 
-  <!-- LIST -->
-  <div id="vocab-list-section">
+  <div id="vocab-list-tab">
     <div class="card">
       <div class="card-title">새 단어 추가</div>
-      <div class="vocab-input-wrap">
-        <input class="vocab-input" id="vocab-jp" placeholder="일본어 (예: 食べる)" />
-      </div>
-      <div class="vocab-input-wrap">
-        <input class="vocab-input" id="vocab-reading" placeholder="읽기 (예: たべる)" />
-      </div>
-      <div class="vocab-input-wrap">
-        <input class="vocab-input" id="vocab-meaning" placeholder="뜻 (예: 먹다)" />
-      </div>
-      <button class="btn btn-primary" onclick="addVocab()">➕ 단어 추가</button>
+      <input class="vocab-input" id="vi-jp" placeholder="일본어 (예: 食べる)">
+      <input class="vocab-input" id="vi-read" placeholder="읽기 (예: たべる)">
+      <input class="vocab-input" id="vi-mean" placeholder="뜻 (예: 먹다)">
+      <button class="btn btn-primary" onclick="addVocab()">➕ 추가</button>
     </div>
     <div class="section-title" id="vocab-count-label">저장된 단어 0개</div>
     <div class="vocab-list" id="vocab-list-el"></div>
   </div>
 
-  <!-- TEST -->
-  <div id="vocab-test-section" class="hidden">
-    <div class="card" id="vocab-test-config">
+  <div id="vocab-test-tab" class="hidden">
+    <div class="card">
       <div class="card-title">테스트 방식</div>
-      <div class="test-config">
-        <div class="chip active" id="vocab-test-mode-jp" onclick="setVocabTestMode('jp')">일본어 → 뜻</div>
-        <div class="chip" id="vocab-test-mode-kr" onclick="setVocabTestMode('kr')">뜻 → 일본어 쓰기</div>
+      <div style="margin-bottom:12px">
+        <span class="chip active" id="vmode-jp" onclick="setVocabMode('jp')">일본어 → 뜻</span>
+        <span class="chip" id="vmode-kr" onclick="setVocabMode('kr')">뜻 → 쓰기</span>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;margin:10px 0">
-        <span style="font-size:13px;color:var(--text2)">표시 시간:</span>
-        <select id="vocab-flash-time">
-          <option value="3">3초</option>
-          <option value="5" selected>5초</option>
-          <option value="7">7초</option>
-        </select>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span style="font-size:13px;color:var(--text2)">표시 시간</span>
+        <select id="vocab-flash-time"><option value="3">3초</option><option value="5" selected>5초</option><option value="7">7초</option></select>
       </div>
-      <button class="btn btn-primary" onclick="startVocabTest()">테스트 시작</button>
+      <button class="btn btn-primary" onclick="startVocabTest()">▶ 테스트 시작</button>
     </div>
-    <div id="vocab-test-game" class="hidden">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <span class="score-badge" id="vocab-test-score">0 / 0</span>
-        <button class="btn btn-secondary btn-sm" onclick="stopVocabTest()">종료</button>
-      </div>
-      <div class="timer-bar"><div class="timer-fill" id="vocab-timer-fill" style="width:100%"></div></div>
-      <div class="test-card">
-        <div class="test-char" id="vocab-test-q" style="font-size:36px"></div>
-        <div class="test-label" id="vocab-test-label"></div>
-      </div>
-      <div class="canvas-wrap" id="vocab-write-canvas-wrap" class="hidden">
-        <canvas id="canvas-vocab" width="360" height="160"></canvas>
-        <div class="canvas-toolbar">
-          <div class="color-dot active" style="background:#f0f0f0" onclick="setColor('#f0f0f0',this,'vocab')"></div>
-          <div style="flex:1"></div>
-          <button class="btn btn-secondary btn-sm" onclick="clearCanvas('canvas-vocab')">지우기</button>
-        </div>
-      </div>
-      <div class="answer-box hidden" id="vocab-test-answer"></div>
-      <div class="row hidden" id="vocab-flash-btns">
-        <button class="btn btn-secondary" onclick="vocabTestNext(false)">❌ 틀림</button>
-        <button class="btn btn-accent3" onclick="vocabTestNext(true)">✅ 맞음</button>
-      </div>
-      <div class="row hidden" id="vocab-write-btns">
-        <button class="btn btn-secondary" onclick="showVocabWriteAnswer()">정답 보기</button>
-        <button class="btn btn-primary" onclick="nextVocabWrite()">다음 →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     FULLSCREEN PANELS
+════════════════════════════════════ -->
+
+<!-- KANA FLASH PANEL -->
+<div class="panel" id="panel-kana-flash">
+  <div class="panel-header">
+    <button class="panel-back" onclick="closePanel('panel-kana-flash',true)">←</button>
+    <span class="panel-title">플래시 테스트</span>
+    <span class="panel-score" id="pkf-score">0 / 0</span>
+  </div>
+  <div class="panel-body">
+    <div class="timer-bar"><div class="timer-fill" id="pkf-timer" style="width:100%"></div></div>
+    <div class="flash-card pop" id="pkf-card">
+      <div class="flash-char" id="pkf-char">あ</div>
+      <div class="flash-sub">읽어보세요</div>
+    </div>
+    <div class="answer-box hidden" id="pkf-answer"></div>
+    <div class="action-row hidden" id="pkf-btns">
+      <button class="btn btn-secondary" onclick="kanaFlashNext(false)">❌ 틀림</button>
+      <button class="btn btn-success" onclick="kanaFlashNext(true)">✅ 맞음</button>
+    </div>
+  </div>
+</div>
+
+<!-- KANA WRITE PANEL -->
+<div class="panel" id="panel-kana-write">
+  <div class="panel-header">
+    <button class="panel-back" onclick="closePanel('panel-kana-write',true)">←</button>
+    <span class="panel-title">쓰기 테스트</span>
+    <span class="nav-progress" id="pkw-progress">0 / 0</span>
+  </div>
+  <div class="panel-body">
+    <div class="flash-card">
+      <div class="flash-sub" style="margin-bottom:8px">이 발음을 써보세요</div>
+      <div class="flash-char" id="pkw-prompt" style="color:var(--accent2);font-size:60px">あ</div>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="cv-kana-write" height="200"></canvas>
+      <div class="canvas-toolbar">
+        <div class="color-dot active" style="background:#f0f0f0" onclick="setDrawColor('cv-kana-write','#f0f0f0',this)"></div>
+        <div class="color-dot" style="background:#e94560" onclick="setDrawColor('cv-kana-write','#e94560',this)"></div>
+        <div class="color-dot" style="background:#4ecdc4" onclick="setDrawColor('cv-kana-write','#4ecdc4',this)"></div>
+        <div style="flex:1"></div>
+        <button class="btn btn-secondary btn-sm" onclick="clearCanvas('cv-kana-write')">지우기</button>
       </div>
     </div>
+    <div class="answer-box hidden" id="pkw-answer"></div>
+    <div class="action-row">
+      <button class="btn btn-secondary" onclick="showKanaWriteAnswer()">정답 보기</button>
+      <button class="btn btn-primary" onclick="nextKanaWrite()">다음 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- KANJI STUDY PANEL -->
+<div class="panel" id="panel-kanji-study">
+  <div class="panel-header">
+    <button class="panel-back" onclick="closePanel('panel-kanji-study',false)">←</button>
+    <span class="panel-title">암기 카드</span>
+    <span class="nav-progress" id="pks-progress">0 / 0</span>
+  </div>
+  <div class="panel-body">
+    <div class="kanji-study-card pop" id="pks-card">
+      <div class="kanji-grade-badge" id="pks-grade"></div>
+      <div class="kanji-big" id="pks-char">漢</div>
+      <div class="kanji-reading" id="pks-reading"></div>
+      <div class="kanji-meaning" id="pks-meaning"></div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-secondary" onclick="prevKanjiStudy()">← 이전</button>
+      <button class="btn btn-primary" onclick="nextKanjiStudy()">다음 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- KANJI TRACE PANEL -->
+<div class="panel" id="panel-kanji-trace">
+  <div class="panel-header">
+    <button class="panel-back" onclick="closePanel('panel-kanji-trace',false)">←</button>
+    <span class="panel-title">따라쓰기</span>
+    <span class="nav-progress" id="pkt-progress">0 / 0</span>
+  </div>
+  <div class="panel-body">
+    <div class="kanji-study-card" style="padding:20px">
+      <div class="kanji-grade-badge" id="pkt-grade"></div>
+      <div class="kanji-reading" id="pkt-reading"></div>
+      <div class="kanji-meaning" id="pkt-meaning"></div>
+    </div>
+    <div class="trace-canvas-wrap">
+      <div class="trace-ghost" id="pkt-ghost"></div>
+      <canvas id="cv-kanji-trace" height="240"></canvas>
+      <div class="canvas-toolbar">
+        <div class="color-dot active" style="background:#f0f0f0" onclick="setDrawColor('cv-kanji-trace','#f0f0f0',this)"></div>
+        <div class="color-dot" style="background:#e94560" onclick="setDrawColor('cv-kanji-trace','#e94560',this)"></div>
+        <div style="flex:1"></div>
+        <button class="btn btn-secondary btn-sm" onclick="clearCanvas('cv-kanji-trace')">지우기</button>
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-secondary" onclick="prevKanjiTrace()">← 이전</button>
+      <button class="btn btn-primary" onclick="nextKanjiTrace()">다음 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- KANJI FLASH PANEL -->
+<div class="panel" id="panel-kanji-flash">
+  <div class="panel-header">
+    <button class="panel-back" onclick="closePanel('panel-kanji-flash',true)">←</button>
+    <span class="panel-title">플래시 테스트</span>
+    <span class="panel-score" id="pkfl-score">0 / 0</span>
+  </div>
+  <div class="panel-body">
+    <div class="timer-bar"><div class="timer-fill" id="pkfl-timer" style="width:100%"></div></div>
+    <div class="flash-card pop" id="pkfl-card">
+      <div class="flash-char kanji-font" id="pkfl-char">漢</div>
+      <div class="flash-sub">읽어보세요</div>
+    </div>
+    <div class="answer-box hidden" id="pkfl-answer"></div>
+    <div class="action-row hidden" id="pkfl-btns">
+      <button class="btn btn-secondary" onclick="kanjiFlashNext(false)">❌ 틀림</button>
+      <button class="btn btn-success" onclick="kanjiFlashNext(true)">✅ 맞음</button>
+    </div>
+  </div>
+</div>
+
+<!-- KANJI WRITE TEST PANEL -->
+<div class="panel" id="panel-kanji-write">
+  <div class="panel-header">
+    <button class="panel-back" onclick="closePanel('panel-kanji-write',true)">←</button>
+    <span class="panel-title">쓰기 테스트</span>
+    <span class="nav-progress" id="pkwt-progress">0 / 0</span>
+  </div>
+  <div class="panel-body">
+    <div class="flash-card">
+      <div class="flash-sub" style="margin-bottom:8px">이 뜻의 한자를 써보세요</div>
+      <div style="font-size:26px;color:var(--accent2);font-weight:700;margin-bottom:4px" id="pkwt-meaning"></div>
+      <div style="font-size:14px;color:var(--text2)" id="pkwt-reading"></div>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="cv-kanji-write" height="200"></canvas>
+      <div class="canvas-toolbar">
+        <div class="color-dot active" style="background:#f0f0f0" onclick="setDrawColor('cv-kanji-write','#f0f0f0',this)"></div>
+        <div class="color-dot" style="background:#e94560" onclick="setDrawColor('cv-kanji-write','#e94560',this)"></div>
+        <div style="flex:1"></div>
+        <button class="btn btn-secondary btn-sm" onclick="clearCanvas('cv-kanji-write')">지우기</button>
+      </div>
+    </div>
+    <div class="answer-box hidden" id="pkwt-answer"></div>
+    <div class="action-row">
+      <button class="btn btn-secondary" onclick="showKanjiWriteAnswer()">정답 보기</button>
+      <button class="btn btn-primary" onclick="nextKanjiWrite()">다음 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- VOCAB TEST PANEL -->
+<div class="panel" id="panel-vocab-test">
+  <div class="panel-header">
+    <button class="panel-back" onclick="closePanel('panel-vocab-test',true)">←</button>
+    <span class="panel-title">단어 테스트</span>
+    <span class="panel-score" id="pvt-score">0 / 0</span>
+  </div>
+  <div class="panel-body">
+    <div class="timer-bar"><div class="timer-fill" id="pvt-timer" style="width:100%"></div></div>
+    <div class="flash-card">
+      <div class="flash-sub" id="pvt-label" style="margin-bottom:12px"></div>
+      <div id="pvt-q" style="font-size:36px;font-weight:700;line-height:1.3"></div>
+    </div>
+    <div class="canvas-wrap hidden" id="pvt-canvas-wrap">
+      <canvas id="cv-vocab" height="160"></canvas>
+      <div class="canvas-toolbar">
+        <div class="color-dot active" style="background:#f0f0f0" onclick="setDrawColor('cv-vocab','#f0f0f0',this)"></div>
+        <div style="flex:1"></div>
+        <button class="btn btn-secondary btn-sm" onclick="clearCanvas('cv-vocab')">지우기</button>
+      </div>
+    </div>
+    <div class="answer-box hidden" id="pvt-answer"></div>
+    <div class="action-row hidden" id="pvt-flash-btns">
+      <button class="btn btn-secondary" onclick="vocabNext(false)">❌ 틀림</button>
+      <button class="btn btn-success" onclick="vocabNext(true)">✅ 맞음</button>
+    </div>
+    <div class="action-row hidden" id="pvt-write-btns">
+      <button class="btn btn-secondary" onclick="showVocabAnswer()">정답 보기</button>
+      <button class="btn btn-primary" onclick="nextVocabWrite()">다음 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT PANEL -->
+<div class="panel" id="panel-result">
+  <div class="panel-header">
+    <button class="panel-back" onclick="closePanel('panel-result',false)">← 메뉴로</button>
+    <span class="panel-title">결과</span>
+  </div>
+  <div class="result-wrap">
+    <div class="result-emoji" id="res-emoji">🎉</div>
+    <div class="result-pct" id="res-pct">85%</div>
+    <div class="result-label" id="res-label">20문제 중 17개 정답</div>
+    <button class="btn btn-primary" style="max-width:280px" onclick="closePanel('panel-result',false)">확인</button>
   </div>
 </div>
 
 <!-- BOTTOM NAV -->
 <nav class="nav">
-  <button class="nav-btn active" onclick="goScreen('screen-home')" id="nav-home">
-    <span class="icon">🏠</span><span>홈</span>
-  </button>
-  <button class="nav-btn" onclick="goScreen('screen-kana')" id="nav-kana">
-    <span class="icon">あ</span><span>가나</span>
-  </button>
-  <button class="nav-btn" onclick="goScreen('screen-kanji')" id="nav-kanji">
-    <span class="icon">漢</span><span>한자</span>
-  </button>
-  <button class="nav-btn" onclick="goScreen('screen-vocab')" id="nav-vocab">
-    <span class="icon">📖</span><span>단어장</span>
-  </button>
+  <button class="nav-btn active" onclick="goScreen('screen-home')" id="nav-home"><span class="icon">🏠</span><span>홈</span></button>
+  <button class="nav-btn" onclick="goScreen('screen-kana')" id="nav-kana"><span class="icon">あ</span><span>가나</span></button>
+  <button class="nav-btn" onclick="goScreen('screen-kanji')" id="nav-kanji"><span class="icon">漢</span><span>한자</span></button>
+  <button class="nav-btn" onclick="goScreen('screen-vocab')" id="nav-vocab"><span class="icon">📖</span><span>단어장</span></button>
 </nav>
-
-<!-- RESULT MODAL -->
-<div class="modal-overlay" id="result-modal">
-  <div class="modal">
-    <div class="result-emoji" id="result-emoji">🎉</div>
-    <div class="result-score" id="result-score">85%</div>
-    <div class="result-label" id="result-label">20문제 중 17개 정답</div>
-    <button class="btn btn-primary" onclick="closeResultModal()">확인</button>
-  </div>
-</div>
 
 <script>
 // ============================================================
+// DATA
+// ============================================================
+const HIRAGANA=[['あ','い','う','え','お'],['か','き','く','け','こ'],['さ','し','す','せ','そ'],['た','ち','つ','て','と'],['な','に','ぬ','ね','の'],['は','ひ','ふ','へ','ほ'],['ま','み','む','め','も'],['や','','ゆ','','よ'],['ら','り','る','れ','ろ'],['わ','','を','',''],['ん','','','','']];
+const KATAKANA=[['ア','イ','ウ','エ','オ'],['カ','キ','ク','ケ','コ'],['サ','シ','ス','セ','ソ'],['タ','チ','ツ','テ','ト'],['ナ','ニ','ヌ','ネ','ノ'],['ハ','ヒ','フ','ヘ','ホ'],['マ','ミ','ム','メ','モ'],['ヤ','','ユ','','ヨ'],['ラ','リ','ル','レ','ロ'],['ワ','','ヲ','',''],['ン','','','','']];
+const ROW_ROM=[['a','i','u','e','o'],['ka','ki','ku','ke','ko'],['sa','shi','su','se','so'],['ta','chi','tsu','te','to'],['na','ni','nu','ne','no'],['ha','hi','fu','he','ho'],['ma','mi','mu','me','mo'],['ya','','yu','','yo'],['ra','ri','ru','re','ro'],['wa','','wo','',''],['n','','','','']];
+const ROW_LABELS=['あ단','か단','さ단','た단','な단','は단','ま단','や단','ら단','わ단','ん'];
+const COL_LABELS=['a','i','u','e','o'];
+
+const KANA_LIST=[];
+HIRAGANA.forEach((row,ri)=>row.forEach((h,ci)=>{if(h){const rom=ROW_ROM[ri][ci];KANA_LIST.push({hira:h,kata:KATAKANA[ri][ci]||'',rom});}}));
 // DATA
 // ============================================================
 const HIRAGANA = [
@@ -2351,644 +2177,461 @@ const KANJI_EXTRA = {
 Object.assign(KANJI_DATA, KANJI_EXTRA);
 
 
-const GRADE_LABELS = {
-  '초1':'초등 1학년','초2':'초등 2학년','초3':'초등 3학년',
-  '초4':'초등 4학년','초5':'초등 5학년','초6':'초등 6학년',
-  '중1':'중학 1학년','중2':'중학 2학년','중3':'중학 3학년',
-  '고1':'고등 1학년','고2':'고등 2학년','고3':'고등 3학년','중학기초':'중학 기초한자','고교확장1':'고교 확장 1','고교확장2':'고교 확장 2',
-};
 
 // ============================================================
 // STATE
 // ============================================================
 let state = {
-  stats: { total: 0, correct: 0, streak: 0, lastDate: '' },
-  vocab: [],
-  kanaFlash: { items:[], idx:0, correct:0, total:0, timer:null, showingAnswer:false },
-  kanaWrite: { items:[], idx:0, correct:0 },
-  kanjiStudy: { grade:'초1', items:[], idx:0 },
-  kanjiTrace: { grade:'초1', items:[], idx:0 },
-  kanjiFlash: { grade:'초1', items:[], idx:0, correct:0, timer:null, showingAnswer:false },
-  kanjiWrite: { grade:'초1', items:[], idx:0, correct:0 },
-  vocabTest: { mode:'jp', items:[], idx:0, correct:0, timer:null, showingAnswer:false },
-  drawColors: { 'canvas-kana':'#f0f0f0', 'canvas-kanji-trace':'#f0f0f0', 'canvas-kanji-write':'#f0f0f0', 'canvas-vocab':'#f0f0f0' },
+  stats:{ total:0, correct:0, streak:0, lastDate:'' },
+  vocab:[],
+  kanaFlash:{ items:[], idx:0, correct:0, total:0, timer:null },
+  kanaWrite:{ items:[], idx:0 },
+  kanjiStudy:{ grade:'초1', items:[], idx:0 },
+  kanjiTrace:{ grade:'초1', items:[], idx:0 },
+  kanjiFlash:{ grade:'초1', items:[], idx:0, correct:0, total:0, timer:null },
+  kanjiWrite:{ grade:'초1', items:[], idx:0 },
+  vocabTest:{ mode:'jp', items:[], idx:0, correct:0, total:0, timer:null },
+  drawColors:{},
+  selectedGrade:'초1',
 };
-
-// Load from localStorage
-try {
-  const saved = localStorage.getItem('jp-master-state');
-  if(saved) {
-    const s = JSON.parse(saved);
-    if(s.stats) state.stats = s.stats;
-    if(s.vocab) state.vocab = s.vocab;
-  }
-} catch(e) {}
-
-function saveState() {
-  try { localStorage.setItem('jp-master-state', JSON.stringify({stats: state.stats, vocab: state.vocab})); } catch(e) {}
-}
+try{const s=JSON.parse(localStorage.getItem('jp-master')||'{}');if(s.stats)state.stats=s.stats;if(s.vocab)state.vocab=s.vocab;}catch(e){}
+function save(){try{localStorage.setItem('jp-master',JSON.stringify({stats:state.stats,vocab:state.vocab}));}catch(e){}}
+function recordAnswer(ok){state.stats.total++;if(ok)state.stats.correct++;const t=new Date().toDateString();if(state.stats.lastDate!==t){state.stats.streak++;state.stats.lastDate=t;}save();}
 
 // ============================================================
 // NAVIGATION
 // ============================================================
-function goScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  const map = {'screen-home':'nav-home','screen-kana':'nav-kana','screen-kanji':'nav-kanji','screen-vocab':'nav-vocab'};
-  if(map[id]) document.getElementById(map[id]).classList.add('active');
-  if(id === 'screen-home') updateHomeStats();
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const m={'screen-home':'nav-home','screen-kana':'nav-kana','screen-kanji':'nav-kanji','screen-vocab':'nav-vocab'};
+  if(m[id])document.getElementById(m[id]).classList.add('active');
+  if(id==='screen-home')updateHome();
+}
+
+function openPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById(id).scrollTop=0;
+}
+
+function closePanel(id, showResult){
+  document.getElementById(id).classList.remove('active');
+  if(showResult){
+    const f=id.includes('kana-flash')?state.kanaFlash:
+             id.includes('kana-write')?{correct:0,total:state.kanaWrite.items.length}:
+             id.includes('kanji-flash')?state.kanjiFlash:
+             id.includes('kanji-write')?{correct:0,total:state.kanjiWrite.items.length}:
+             state.vocabTest;
+    if(f.total>0)showResultPanel(f.correct,f.total);
+  }
+}
+
+function showResultPanel(correct,total){
+  const pct=total?Math.round(correct/total*100):0;
+  document.getElementById('res-emoji').textContent=pct>=80?'🎉':pct>=60?'😊':'💪';
+  document.getElementById('res-pct').textContent=pct+'%';
+  document.getElementById('res-label').textContent=`${total}문제 중 ${correct}개 정답`;
+  openPanel('panel-result');
 }
 
 // ============================================================
 // HOME
 // ============================================================
-function updateHomeStats() {
-  document.getElementById('home-streak').textContent = state.stats.streak;
-  document.getElementById('home-total').textContent = state.stats.total;
-  const pct = state.stats.total ? Math.round(state.stats.correct / state.stats.total * 100) : 0;
-  document.getElementById('home-correct').textContent = pct + '%';
-}
-
-function recordAnswer(correct) {
-  state.stats.total++;
-  if(correct) state.stats.correct++;
-  const today = new Date().toDateString();
-  if(state.stats.lastDate !== today) {
-    state.stats.streak++;
-    state.stats.lastDate = today;
-  }
-  saveState();
+function updateHome(){
+  document.getElementById('home-streak').textContent=state.stats.streak;
+  document.getElementById('home-total').textContent=state.stats.total;
+  const p=state.stats.total?Math.round(state.stats.correct/state.stats.total*100):0;
+  document.getElementById('home-correct').textContent=p+'%';
 }
 
 // ============================================================
 // KANA TABLE
 // ============================================================
-let currentKanaType = 'hira';
-
-function showKanaTable(type) {
-  currentKanaType = type;
-  document.getElementById('tab-hira').classList.toggle('active', type==='hira');
-  document.getElementById('tab-kata').classList.toggle('active', type==='kata');
-  const data = type === 'hira' ? HIRAGANA : KATAKANA;
-  const rows_rom = [
-    ['a','i','u','e','o'],['ka','ki','ku','ke','ko'],['sa','shi','su','se','so'],
-    ['ta','chi','tsu','te','to'],['na','ni','nu','ne','no'],['ha','hi','fu','he','ho'],
-    ['ma','mi','mu','me','mo'],['ya','','yu','','yo'],['ra','ri','ru','re','ro'],
-    ['wa','','wo','',''],['n','','','',''],
-  ];
-  let html = '<tr><th></th>';
-  COL_LABELS.forEach(c => html += `<th>${c}</th>`);
-  html += '</tr>';
-  data.forEach((row, ri) => {
-    html += `<tr><th>${ROW_LABELS[ri]}</th>`;
-    row.forEach((ch, ci) => {
-      if(ch) html += `<td><div>${ch}</div><small>${rows_rom[ri][ci]}</small></td>`;
-      else html += `<td class="empty"></td>`;
+function showKanaTable(type){
+  document.getElementById('tab-hira').classList.toggle('active',type==='hira');
+  document.getElementById('tab-kata').classList.toggle('active',type==='kata');
+  const data=type==='hira'?HIRAGANA:KATAKANA;
+  let html='<tr><th></th>'+COL_LABELS.map(c=>`<th>${c}</th>`).join('')+'</tr>';
+  data.forEach((row,ri)=>{
+    html+=`<tr><th>${ROW_LABELS[ri]}</th>`;
+    row.forEach((ch,ci)=>{
+      if(ch)html+=`<td>${ch}<small>${ROW_ROM[ri][ci]}</small></td>`;
+      else html+=`<td class="empty"></td>`;
     });
-    html += '</tr>';
+    html+='</tr>';
   });
-  document.getElementById('kana-table-el').innerHTML = html;
-}
-
-function setKanaSection(s) {
-  document.getElementById('kana-table-section').classList.toggle('hidden', s!=='table');
-  document.getElementById('kana-test-flash-section').classList.toggle('hidden', s!=='test-flash');
-  document.getElementById('kana-test-write-section').classList.toggle('hidden', s!=='test-write');
-  document.querySelectorAll('#screen-kana .gojuuon-tabs:first-of-type .tab-btn').forEach((b,i) => {
-    b.classList.toggle('active', ['table','test-flash','test-write'][i] === s);
-  });
-}
-
-function toggleChip(el, group) {
-  el.classList.toggle('active');
-}
-
-function getActiveChips(group) {
-  return [...document.querySelectorAll(`#kana-type-chips .chip.active`)].map(c => c.dataset.val);
+  document.getElementById('kana-table-el').innerHTML=html;
 }
 
 // ============================================================
-// KANA FLASH TEST
+// CHIP HELPERS
 // ============================================================
-function buildKanaItems(chipGroup) {
-  const chips = [...document.querySelectorAll(`#${chipGroup} .chip.active`)].map(c => c.dataset.val);
-  let items = [];
-  KANA_LIST.forEach(k => {
-    if(chips.includes('hira') && k.hira) items.push({char: k.hira, rom: k.rom, type:'hira'});
-    if(chips.includes('kata') && k.kata) items.push({char: k.kata, rom: k.rom, type:'kata'});
+function initChips(containerId){
+  document.querySelectorAll(`#${containerId} .chip`).forEach(c=>{
+    c.onclick=()=>c.classList.toggle('active');
+  });
+}
+function getChipVals(containerId){
+  return [...document.querySelectorAll(`#${containerId} .chip.active`)].map(c=>c.dataset.val);
+}
+
+// ============================================================
+// KANA FLASH
+// ============================================================
+function buildKanaItems(chipId){
+  const types=getChipVals(chipId);
+  let items=[];
+  KANA_LIST.forEach(k=>{
+    if(types.includes('hira')&&k.hira)items.push({char:k.hira,rom:k.rom});
+    if(types.includes('kata')&&k.kata)items.push({char:k.kata,rom:k.rom});
   });
   return shuffle(items);
 }
 
-function startKanaFlash() {
-  const items = buildKanaItems('kana-type-chips');
-  if(!items.length) return alert('히라가나 또는 카타카나를 선택하세요.');
-  state.kanaFlash = { items, idx:0, correct:0, total:0, timer:null, showingAnswer:false };
-  document.getElementById('kana-flash-game').classList.remove('hidden');
+function startKanaFlash(){
+  const items=buildKanaItems('kana-flash-chips');
+  if(!items.length)return alert('히라가나 또는 카타카나를 선택하세요.');
+  clearTimeout(state.kanaFlash.timer);
+  state.kanaFlash={items,idx:0,correct:0,total:0,timer:null};
+  openPanel('panel-kana-flash');
   showKanaFlashCard();
 }
 
-function stopKanaFlash() {
-  clearInterval(state.kanaFlash.timer);
-  document.getElementById('kana-flash-game').classList.add('hidden');
-  showResult(state.kanaFlash.correct, state.kanaFlash.total);
-}
-
-function showKanaFlashCard() {
-  const f = state.kanaFlash;
-  if(f.idx >= f.items.length) { stopKanaFlash(); return; }
-  const item = f.items[f.idx];
-  f.showingAnswer = false;
-  document.getElementById('kana-flash-char').textContent = item.char;
-  document.getElementById('kana-flash-answer').classList.add('hidden');
-  document.getElementById('kana-flash-btns').classList.add('hidden');
-  document.getElementById('kana-flash-score').textContent = `${f.correct} / ${f.total}`;
-
-  const sec = parseInt(document.getElementById('kana-flash-time').value);
-  const fill = document.getElementById('kana-timer-fill');
-  fill.style.transition = 'none';
-  fill.style.width = '100%';
-  setTimeout(() => {
-    fill.style.transition = `width ${sec}s linear`;
-    fill.style.width = '0%';
-  }, 50);
-
+function showKanaFlashCard(){
+  const f=state.kanaFlash;
+  if(f.idx>=f.items.length){closePanel('panel-kana-flash',false);showResultPanel(f.correct,f.total);return;}
+  const item=f.items[f.idx];
+  document.getElementById('pkf-char').textContent=item.char;
+  document.getElementById('pkf-answer').classList.add('hidden');
+  document.getElementById('pkf-btns').classList.add('hidden');
+  document.getElementById('pkf-score').textContent=`${f.correct} / ${f.total}`;
+  const sec=parseInt(document.getElementById('kana-flash-time').value);
+  const fill=document.getElementById('pkf-timer');
+  fill.style.transition='none';fill.style.width='100%';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{fill.style.transition=`width ${sec}s linear`;fill.style.width='0%';}));
   clearTimeout(f.timer);
-  f.timer = setTimeout(() => showKanaAnswer(), sec * 1000);
+  f.timer=setTimeout(()=>{
+    document.getElementById('pkf-answer').textContent=item.rom;
+    document.getElementById('pkf-answer').classList.remove('hidden');
+    document.getElementById('pkf-btns').classList.remove('hidden');
+  },sec*1000);
 }
 
-function showKanaAnswer() {
-  const f = state.kanaFlash;
-  const item = f.items[f.idx];
-  const ansEl = document.getElementById('kana-flash-answer');
-  ansEl.textContent = item.rom;
-  ansEl.classList.remove('hidden');
-  document.getElementById('kana-flash-btns').classList.remove('hidden');
-  f.showingAnswer = true;
-}
-
-function kanaFlashNext(correct) {
-  recordAnswer(correct);
-  state.kanaFlash.correct += correct ? 1 : 0;
+function kanaFlashNext(ok){
+  clearTimeout(state.kanaFlash.timer);
+  recordAnswer(ok);
+  state.kanaFlash.correct+=ok?1:0;
   state.kanaFlash.total++;
   state.kanaFlash.idx++;
   showKanaFlashCard();
 }
 
 // ============================================================
-// KANA WRITE TEST
+// KANA WRITE
 // ============================================================
-function startKanaWrite() {
-  const items = buildKanaItems('kana-write-chips');
-  if(!items.length) return alert('히라가나 또는 카타카나를 선택하세요.');
-  state.kanaWrite = { items, idx:0, correct:0 };
-  document.getElementById('kana-write-game').classList.remove('hidden');
+function startKanaWrite(){
+  const items=buildKanaItems('kana-write-chips');
+  if(!items.length)return alert('히라가나 또는 카타카나를 선택하세요.');
+  state.kanaWrite={items:shuffle(items),idx:0};
+  openPanel('panel-kana-write');
   showKanaWriteCard();
+  setTimeout(()=>initCanvas('cv-kana-write'),100);
 }
 
-function stopKanaWrite() {
-  document.getElementById('kana-write-game').classList.add('hidden');
-  showResult(state.kanaWrite.correct, state.kanaWrite.items.length);
+function showKanaWriteCard(){
+  const w=state.kanaWrite;
+  if(w.idx>=w.items.length){closePanel('panel-kana-write',false);showResultPanel(0,w.items.length);return;}
+  document.getElementById('pkw-prompt').textContent=w.items[w.idx].rom;
+  document.getElementById('pkw-answer').classList.add('hidden');
+  document.getElementById('pkw-progress').textContent=`${w.idx+1} / ${w.items.length}`;
+  clearCanvas('cv-kana-write');
 }
-
-function showKanaWriteCard() {
-  const w = state.kanaWrite;
-  if(w.idx >= w.items.length) { stopKanaWrite(); return; }
-  const item = w.items[w.idx];
-  // show romaji, ask to write kana
-  document.getElementById('kana-write-prompt').textContent = item.rom;
-  document.getElementById('kana-write-answer').classList.add('hidden');
-  document.getElementById('kana-write-score').textContent = `${w.idx} / ${w.items.length}`;
-  clearCanvas('canvas-kana');
+function showKanaWriteAnswer(){
+  const item=state.kanaWrite.items[state.kanaWrite.idx];
+  const el=document.getElementById('pkw-answer');
+  el.textContent=`${item.char} (${item.rom})`;
+  el.classList.remove('hidden');
 }
+function nextKanaWrite(){state.kanaWrite.idx++;showKanaWriteCard();}
 
-function showKanaWriteAnswer() {
-  const item = state.kanaWrite.items[state.kanaWrite.idx];
-  const ansEl = document.getElementById('kana-write-answer');
-  ansEl.textContent = `${item.char} (${item.rom})`;
-  ansEl.classList.remove('hidden');
+// ============================================================
+// KANJI GRADE GRID
+// ============================================================
+const GRADES=Object.keys(KANJI_DATA);
+function buildGradeGrid(){
+  const el=document.getElementById('kanji-grade-grid');
+  el.innerHTML=GRADES.map(g=>`<button class="level-btn${state.selectedGrade===g?' active':''}" onclick="selectGrade('${g}')">${g}<small>${KANJI_DATA[g].length}자</small></button>`).join('');
 }
-
-function nextKanaWrite() {
-  state.kanaWrite.idx++;
-  showKanaWriteCard();
+function selectGrade(g){
+  state.selectedGrade=g;
+  document.querySelectorAll('#kanji-grade-grid .level-btn').forEach(b=>b.classList.remove('active'));
+  event.target.closest('.level-btn').classList.add('active');
+}
+function getKanjiItems(){
+  const cumulative=document.getElementById('kanji-cumulative').checked;
+  let items=[];
+  if(cumulative){const idx=GRADES.indexOf(state.selectedGrade);for(let i=0;i<=idx;i++)items=items.concat(KANJI_DATA[GRADES[i]]);}
+  else items=[...KANJI_DATA[state.selectedGrade]];
+  return items;
 }
 
 // ============================================================
-// KANJI LEVEL GRIDS
+// KANJI STUDY
 // ============================================================
-const GRADES = Object.keys(KANJI_DATA);
-
-function buildLevelGrid(containerId, stateKey, callback) {
-  const el = document.getElementById(containerId);
-  el.innerHTML = GRADES.map(g => `
-    <button class="level-btn ${state[stateKey].grade===g?'active':''}" onclick="${callback}('${g}')">
-      ${g}<small>${KANJI_DATA[g].length}자</small>
-    </button>`).join('');
-}
-
-function setKanjiSection(s) {
-  ['study','trace','test-flash','test-write'].forEach(sec => {
-    document.getElementById(`kanji-${sec}-section`).classList.toggle('hidden', sec!==s);
-  });
-  document.querySelectorAll('#screen-kanji .gojuuon-tabs:first-of-type .tab-btn').forEach((b,i) => {
-    b.classList.toggle('active', ['study','trace','test-flash','test-write'][i]===s);
-  });
-}
-
-// STUDY
-function selectKanjiStudyGrade(g) {
-  state.kanjiStudy.grade = g;
-  state.kanjiStudy.idx = 0;
-  buildLevelGrid('kanji-level-grid','kanjiStudy','selectKanjiStudyGrade');
-  loadKanjiStudy();
-}
-
-function loadKanjiStudy() {
-  const cumulative = document.getElementById('kanji-cumulative').checked;
-  let items = [];
-  if(cumulative) {
-    const idx = GRADES.indexOf(state.kanjiStudy.grade);
-    for(let i=0;i<=idx;i++) items = items.concat(KANJI_DATA[GRADES[i]]);
-  } else {
-    items = KANJI_DATA[state.kanjiStudy.grade];
-  }
-  state.kanjiStudy.items = items;
-  state.kanjiStudy.idx = 0;
-  document.getElementById('kanji-study-card').classList.remove('hidden');
+function startKanjiStudy(){
+  const items=getKanjiItems();
+  state.kanjiStudy={grade:state.selectedGrade,items,idx:0};
+  openPanel('panel-kanji-study');
   showKanjiStudyCard();
 }
-
-function showKanjiStudyCard() {
-  const s = state.kanjiStudy;
-  if(!s.items.length) return;
-  const item = s.items[s.idx];
-  document.getElementById('kanji-card-char').textContent = item.k;
-  document.getElementById('kanji-card-reading').textContent = item.r;
-  document.getElementById('kanji-card-meaning').textContent = item.m;
-  document.getElementById('kanji-card-grade').textContent = `📚 ${state.kanjiStudy.grade}`;
-  document.getElementById('kanji-study-progress').textContent = `${s.idx+1} / ${s.items.length}`;
+function showKanjiStudyCard(){
+  const s=state.kanjiStudy;
+  if(!s.items.length)return;
+  const item=s.items[s.idx];
+  document.getElementById('pks-char').textContent=item.k;
+  document.getElementById('pks-reading').textContent=item.r;
+  document.getElementById('pks-meaning').textContent=item.m;
+  document.getElementById('pks-grade').textContent=`📚 ${s.grade}`;
+  document.getElementById('pks-progress').textContent=`${s.idx+1} / ${s.items.length}`;
 }
+function nextKanjiStudy(){const s=state.kanjiStudy;if(s.idx<s.items.length-1){s.idx++;showKanjiStudyCard();}}
+function prevKanjiStudy(){const s=state.kanjiStudy;if(s.idx>0){s.idx--;showKanjiStudyCard();}}
 
-function nextKanji() {
-  const s = state.kanjiStudy;
-  if(s.idx < s.items.length-1) { s.idx++; showKanjiStudyCard(); }
-}
-function prevKanji() {
-  const s = state.kanjiStudy;
-  if(s.idx > 0) { s.idx--; showKanjiStudyCard(); }
-}
-
-// TRACE
-function selectKanjiTraceGrade(g) {
-  state.kanjiTrace.grade = g;
-  state.kanjiTrace.idx = 0;
-  buildLevelGrid('kanji-trace-level-grid','kanjiTrace','selectKanjiTraceGrade');
-  state.kanjiTrace.items = KANJI_DATA[g];
-  document.getElementById('kanji-trace-card').classList.remove('hidden');
+// ============================================================
+// KANJI TRACE
+// ============================================================
+function startKanjiTrace(){
+  const items=getKanjiItems();
+  state.kanjiTrace={grade:state.selectedGrade,items,idx:0};
+  openPanel('panel-kanji-trace');
   showKanjiTraceCard();
+  setTimeout(()=>initCanvas('cv-kanji-trace'),100);
 }
+function showKanjiTraceCard(){
+  const s=state.kanjiTrace;
+  const item=s.items[s.idx];
+  document.getElementById('pkt-ghost').textContent=item.k;
+  document.getElementById('pkt-reading').textContent=item.r;
+  document.getElementById('pkt-meaning').textContent=item.m;
+  document.getElementById('pkt-grade').textContent=`📚 ${s.grade}`;
+  document.getElementById('pkt-progress').textContent=`${s.idx+1} / ${s.items.length}`;
+  clearCanvas('cv-kanji-trace');
+}
+function nextKanjiTrace(){const s=state.kanjiTrace;if(s.idx<s.items.length-1){s.idx++;showKanjiTraceCard();}else{closePanel('panel-kanji-trace',false);}}
+function prevKanjiTrace(){const s=state.kanjiTrace;if(s.idx>0){s.idx--;showKanjiTraceCard();}}
 
-function showKanjiTraceCard() {
-  const s = state.kanjiTrace;
-  const item = s.items[s.idx];
-  document.getElementById('kanji-trace-ghost').textContent = item.k;
-  document.getElementById('kanji-trace-reading').textContent = item.r;
-  document.getElementById('kanji-trace-meaning').textContent = item.m;
-  document.getElementById('kanji-trace-grade').textContent = `📚 ${state.kanjiTrace.grade}`;
-  document.getElementById('kanji-trace-progress').textContent = `${s.idx+1} / ${s.items.length}`;
-  clearCanvas('canvas-kanji-trace');
-}
-
-function nextKanjiTrace() {
-  const s = state.kanjiTrace;
-  if(s.idx < s.items.length-1) { s.idx++; showKanjiTraceCard(); }
-}
-function prevKanjiTrace() {
-  const s = state.kanjiTrace;
-  if(s.idx > 0) { s.idx--; showKanjiTraceCard(); }
-}
-
-// FLASH TEST
-function selectKanjiTestGrade(g) {
-  state.kanjiFlash.grade = g;
-  buildLevelGrid('kanji-test-level-grid','kanjiFlash','selectKanjiTestGrade');
-}
-
-function startKanjiFlash() {
-  const items = shuffle([...KANJI_DATA[state.kanjiFlash.grade]]);
-  state.kanjiFlash = { ...state.kanjiFlash, items, idx:0, correct:0, total:0, timer:null, showingAnswer:false };
-  document.getElementById('kanji-flash-game').classList.remove('hidden');
+// ============================================================
+// KANJI FLASH
+// ============================================================
+function startKanjiFlash(){
+  const items=shuffle(getKanjiItems());
+  clearTimeout(state.kanjiFlash.timer);
+  state.kanjiFlash={grade:state.selectedGrade,items,idx:0,correct:0,total:0,timer:null};
+  openPanel('panel-kanji-flash');
   showKanjiFlashCard();
 }
-
-function stopKanjiFlash() {
-  clearTimeout(state.kanjiFlash.timer);
-  document.getElementById('kanji-flash-game').classList.add('hidden');
-  showResult(state.kanjiFlash.correct, state.kanjiFlash.total);
-}
-
-function showKanjiFlashCard() {
-  const f = state.kanjiFlash;
-  if(f.idx >= f.items.length) { stopKanjiFlash(); return; }
-  const item = f.items[f.idx];
-  document.getElementById('kanji-flash-char').textContent = item.k;
-  document.getElementById('kanji-flash-answer').classList.add('hidden');
-  document.getElementById('kanji-flash-btns').classList.add('hidden');
-  document.getElementById('kanji-flash-score').textContent = `${f.correct} / ${f.total}`;
-  const sec = parseInt(document.getElementById('kanji-flash-time').value);
-  const fill = document.getElementById('kanji-timer-fill');
-  fill.style.transition='none'; fill.style.width='100%';
-  setTimeout(() => { fill.style.transition=`width ${sec}s linear`; fill.style.width='0%'; }, 50);
+function showKanjiFlashCard(){
+  const f=state.kanjiFlash;
+  if(f.idx>=f.items.length){closePanel('panel-kanji-flash',false);showResultPanel(f.correct,f.total);return;}
+  const item=f.items[f.idx];
+  document.getElementById('pkfl-char').textContent=item.k;
+  document.getElementById('pkfl-answer').classList.add('hidden');
+  document.getElementById('pkfl-btns').classList.add('hidden');
+  document.getElementById('pkfl-score').textContent=`${f.correct} / ${f.total}`;
+  const sec=parseInt(document.getElementById('kanji-flash-time').value);
+  const fill=document.getElementById('pkfl-timer');
+  fill.style.transition='none';fill.style.width='100%';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{fill.style.transition=`width ${sec}s linear`;fill.style.width='0%';}));
   clearTimeout(f.timer);
-  f.timer = setTimeout(() => {
-    const ans = document.getElementById('kanji-flash-answer');
-    ans.textContent = `${item.r} - ${item.m}`;
-    ans.classList.remove('hidden');
-    document.getElementById('kanji-flash-btns').classList.remove('hidden');
-  }, sec * 1000);
+  f.timer=setTimeout(()=>{
+    const item2=state.kanjiFlash.items[state.kanjiFlash.idx];
+    document.getElementById('pkfl-answer').textContent=`${item2.r}　${item2.m}`;
+    document.getElementById('pkfl-answer').classList.remove('hidden');
+    document.getElementById('pkfl-btns').classList.remove('hidden');
+  },sec*1000);
 }
-
-function kanjiFlashNext(correct) {
-  recordAnswer(correct);
-  state.kanjiFlash.correct += correct ? 1 : 0;
+function kanjiFlashNext(ok){
+  clearTimeout(state.kanjiFlash.timer);
+  recordAnswer(ok);
+  state.kanjiFlash.correct+=ok?1:0;
   state.kanjiFlash.total++;
   state.kanjiFlash.idx++;
   showKanjiFlashCard();
 }
 
-// KANJI WRITE
-function selectKanjiWriteGrade(g) {
-  state.kanjiWrite.grade = g;
-  buildLevelGrid('kanji-write-level-grid','kanjiWrite','selectKanjiWriteGrade');
-}
-
-function startKanjiWrite() {
-  const items = shuffle([...KANJI_DATA[state.kanjiWrite.grade||'초1']]);
-  state.kanjiWrite = { ...state.kanjiWrite, items, idx:0, correct:0 };
-  document.getElementById('kanji-write-game').classList.remove('hidden');
+// ============================================================
+// KANJI WRITE TEST
+// ============================================================
+function startKanjiWriteTest(){
+  const items=shuffle(getKanjiItems());
+  state.kanjiWrite={grade:state.selectedGrade,items,idx:0};
+  openPanel('panel-kanji-write');
   showKanjiWriteCard();
+  setTimeout(()=>initCanvas('cv-kanji-write'),100);
 }
-
-function stopKanjiWrite() {
-  document.getElementById('kanji-write-game').classList.add('hidden');
-  showResult(state.kanjiWrite.correct, state.kanjiWrite.items.length);
+function showKanjiWriteCard(){
+  const w=state.kanjiWrite;
+  if(w.idx>=w.items.length){closePanel('panel-kanji-write',false);showResultPanel(0,w.items.length);return;}
+  const item=w.items[w.idx];
+  document.getElementById('pkwt-meaning').textContent=item.m;
+  document.getElementById('pkwt-reading').textContent=`읽기: ${item.r}`;
+  document.getElementById('pkwt-answer').classList.add('hidden');
+  document.getElementById('pkwt-progress').textContent=`${w.idx+1} / ${w.items.length}`;
+  clearCanvas('cv-kanji-write');
 }
-
-function showKanjiWriteCard() {
-  const w = state.kanjiWrite;
-  if(w.idx >= w.items.length) { stopKanjiWrite(); return; }
-  const item = w.items[w.idx];
-  document.getElementById('kanji-write-prompt').textContent = item.m;
-  document.getElementById('kanji-write-hint').textContent = `읽기: ${item.r}`;
-  document.getElementById('kanji-write-answer').classList.add('hidden');
-  document.getElementById('kanji-write-score').textContent = `${w.idx} / ${w.items.length}`;
-  clearCanvas('canvas-kanji-write');
-}
-
-function showKanjiWriteAnswer() {
-  const item = state.kanjiWrite.items[state.kanjiWrite.idx];
-  const el = document.getElementById('kanji-write-answer');
-  el.textContent = item.k;
+function showKanjiWriteAnswer(){
+  const item=state.kanjiWrite.items[state.kanjiWrite.idx];
+  const el=document.getElementById('pkwt-answer');
+  el.textContent=item.k;el.style.fontSize='60px';el.style.fontFamily="'Noto Serif JP',serif";
   el.classList.remove('hidden');
 }
-
-function nextKanjiWrite() {
-  state.kanjiWrite.idx++;
-  showKanjiWriteCard();
-}
+function nextKanjiWrite(){state.kanjiWrite.idx++;showKanjiWriteCard();}
 
 // ============================================================
-// VOCABULARY
+// VOCAB
 // ============================================================
-function setVocabSection(s) {
-  document.getElementById('vocab-list-section').classList.toggle('hidden', s!=='list');
-  document.getElementById('vocab-test-section').classList.toggle('hidden', s!=='test');
-  document.querySelectorAll('#screen-vocab .gojuuon-tabs .tab-btn').forEach((b,i) => {
-    b.classList.toggle('active', ['list','test'][i]===s);
-  });
-  if(s==='list') renderVocabList();
+function setVocabTab(t){
+  document.getElementById('vocab-list-tab').classList.toggle('hidden',t!=='list');
+  document.getElementById('vocab-test-tab').classList.toggle('hidden',t!=='test');
+  document.querySelectorAll('#screen-vocab .tab-btn').forEach((b,i)=>b.classList.toggle('active',['list','test'][i]===t));
+  if(t==='list')renderVocab();
 }
-
-function addVocab() {
-  const jp = document.getElementById('vocab-jp').value.trim();
-  const reading = document.getElementById('vocab-reading').value.trim();
-  const meaning = document.getElementById('vocab-meaning').value.trim();
-  if(!jp || !meaning) return alert('일본어와 뜻은 필수입니다.');
-  state.vocab.push({ jp, reading, meaning, id: Date.now() });
-  saveState();
-  document.getElementById('vocab-jp').value = '';
-  document.getElementById('vocab-reading').value = '';
-  document.getElementById('vocab-meaning').value = '';
-  renderVocabList();
+function setVocabMode(m){
+  state.vocabTest.mode=m;
+  document.getElementById('vmode-jp').classList.toggle('active',m==='jp');
+  document.getElementById('vmode-kr').classList.toggle('active',m==='kr');
 }
-
-function renderVocabList() {
-  document.getElementById('vocab-count-label').textContent = `저장된 단어 ${state.vocab.length}개`;
-  const el = document.getElementById('vocab-list-el');
-  if(!state.vocab.length) { el.innerHTML = '<div style="text-align:center;color:var(--text2);padding:30px">아직 단어가 없어요</div>'; return; }
-  el.innerHTML = state.vocab.map((v,i) => `
-    <div class="vocab-item">
-      <div class="vocab-jp">${v.jp}</div>
-      <div class="vocab-info">
-        <div class="vocab-reading">${v.reading || ''}</div>
-        <div class="vocab-meaning">${v.meaning}</div>
-      </div>
-      <button class="vocab-del" onclick="deleteVocab(${i})">🗑</button>
-    </div>`).join('');
+function addVocab(){
+  const jp=document.getElementById('vi-jp').value.trim();
+  const read=document.getElementById('vi-read').value.trim();
+  const mean=document.getElementById('vi-mean').value.trim();
+  if(!jp||!mean)return alert('일본어와 뜻은 필수입니다.');
+  state.vocab.push({jp,read,mean,id:Date.now()});
+  save();
+  ['vi-jp','vi-read','vi-mean'].forEach(id=>document.getElementById(id).value='');
+  renderVocab();
 }
-
-function deleteVocab(i) {
-  state.vocab.splice(i,1);
-  saveState();
-  renderVocabList();
+function deleteVocab(i){state.vocab.splice(i,1);save();renderVocab();}
+function renderVocab(){
+  document.getElementById('vocab-count-label').textContent=`저장된 단어 ${state.vocab.length}개`;
+  const el=document.getElementById('vocab-list-el');
+  if(!state.vocab.length){el.innerHTML='<div style="text-align:center;color:var(--text2);padding:30px">아직 단어가 없어요</div>';return;}
+  el.innerHTML=state.vocab.map((v,i)=>`<div class="vocab-item"><div class="vocab-jp">${v.jp}</div><div class="vocab-info"><div class="vocab-reading">${v.read||''}</div><div class="vocab-meaning">${v.mean}</div></div><button class="vocab-del" onclick="deleteVocab(${i})">🗑</button></div>`).join('');
 }
-
-let vocabTestMode = 'jp';
-function setVocabTestMode(m) {
-  vocabTestMode = m;
-  document.getElementById('vocab-test-mode-jp').classList.toggle('active', m==='jp');
-  document.getElementById('vocab-test-mode-kr').classList.toggle('active', m==='kr');
-}
-
-function startVocabTest() {
-  if(!state.vocab.length) return alert('단어장이 비어있어요. 먼저 단어를 추가하세요.');
-  const items = shuffle([...state.vocab]);
-  state.vocabTest = { mode: vocabTestMode, items, idx:0, correct:0, timer:null };
-  document.getElementById('vocab-test-config').classList.add('hidden');
-  document.getElementById('vocab-test-game').classList.remove('hidden');
-  showVocabTestCard();
-}
-
-function stopVocabTest() {
+function startVocabTest(){
+  if(!state.vocab.length)return alert('단어장이 비어있어요.');
+  const items=shuffle([...state.vocab]);
   clearTimeout(state.vocabTest.timer);
-  document.getElementById('vocab-test-game').classList.add('hidden');
-  document.getElementById('vocab-test-config').classList.remove('hidden');
-  showResult(state.vocabTest.correct, state.vocabTest.total||state.vocabTest.items.length);
+  state.vocabTest={mode:state.vocabTest.mode,items,idx:0,correct:0,total:0,timer:null};
+  openPanel('panel-vocab-test');
+  showVocabCard();
+  setTimeout(()=>initCanvas('cv-vocab'),100);
 }
-
-function showVocabTestCard() {
-  const t = state.vocabTest;
-  if(t.idx >= t.items.length) { stopVocabTest(); return; }
-  const item = t.items[t.idx];
-  document.getElementById('vocab-test-score').textContent = `${t.correct} / ${t.idx}`;
-  document.getElementById('vocab-test-answer').classList.add('hidden');
-
-  const writeWrap = document.getElementById('vocab-write-canvas-wrap');
-  const flashBtns = document.getElementById('vocab-flash-btns');
-  const writeBtns = document.getElementById('vocab-write-btns');
-
-  if(t.mode === 'jp') {
-    document.getElementById('vocab-test-q').textContent = item.jp + (item.reading ? `\n${item.reading}` : '');
-    document.getElementById('vocab-test-label').textContent = '뜻을 맞춰보세요';
-    writeWrap.classList.add('hidden');
-    writeBtns.classList.add('hidden');
-    const sec = parseInt(document.getElementById('vocab-flash-time').value);
-    const fill = document.getElementById('vocab-timer-fill');
-    fill.style.transition='none'; fill.style.width='100%';
-    setTimeout(()=>{ fill.style.transition=`width ${sec}s linear`; fill.style.width='0%'; },50);
+function showVocabCard(){
+  const t=state.vocabTest;
+  if(t.idx>=t.items.length){closePanel('panel-vocab-test',false);showResultPanel(t.correct,t.total||t.items.length);return;}
+  const item=t.items[t.idx];
+  document.getElementById('pvt-score').textContent=`${t.correct} / ${t.idx}`;
+  document.getElementById('pvt-answer').classList.add('hidden');
+  document.getElementById('pvt-flash-btns').classList.add('hidden');
+  document.getElementById('pvt-write-btns').classList.add('hidden');
+  document.getElementById('pvt-canvas-wrap').classList.add('hidden');
+  if(t.mode==='jp'){
+    document.getElementById('pvt-label').textContent='뜻을 맞춰보세요';
+    document.getElementById('pvt-q').textContent=item.jp+(item.read?`\n${item.read}`:'');
+    const sec=parseInt(document.getElementById('vocab-flash-time').value);
+    const fill=document.getElementById('pvt-timer');
+    fill.style.transition='none';fill.style.width='100%';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{fill.style.transition=`width ${sec}s linear`;fill.style.width='0%';}));
     clearTimeout(t.timer);
-    t.timer = setTimeout(()=>{
-      document.getElementById('vocab-test-answer').textContent = item.meaning;
-      document.getElementById('vocab-test-answer').classList.remove('hidden');
-      flashBtns.classList.remove('hidden');
-    }, sec*1000);
-  } else {
-    document.getElementById('vocab-test-q').textContent = item.meaning;
-    document.getElementById('vocab-test-label').textContent = '일본어로 써보세요';
-    writeWrap.classList.remove('hidden');
-    flashBtns.classList.add('hidden');
-    writeBtns.classList.remove('hidden');
-    clearCanvas('canvas-vocab');
-    document.getElementById('vocab-timer-fill').style.width = '100%';
+    t.timer=setTimeout(()=>{
+      document.getElementById('pvt-answer').textContent=item.mean;
+      document.getElementById('pvt-answer').classList.remove('hidden');
+      document.getElementById('pvt-flash-btns').classList.remove('hidden');
+    },sec*1000);
+  }else{
+    document.getElementById('pvt-timer').style.width='100%';
+    document.getElementById('pvt-label').textContent='일본어로 써보세요';
+    document.getElementById('pvt-q').textContent=item.mean;
+    document.getElementById('pvt-canvas-wrap').classList.remove('hidden');
+    document.getElementById('pvt-write-btns').classList.remove('hidden');
+    clearCanvas('cv-vocab');
   }
 }
-
-function vocabTestNext(correct) {
-  recordAnswer(correct);
-  state.vocabTest.correct += correct ? 1 : 0;
-  state.vocabTest.total = (state.vocabTest.total||0) + 1;
+function vocabNext(ok){
+  clearTimeout(state.vocabTest.timer);
+  recordAnswer(ok);
+  state.vocabTest.correct+=ok?1:0;
+  state.vocabTest.total++;
   state.vocabTest.idx++;
-  document.getElementById('vocab-flash-btns').classList.add('hidden');
-  showVocabTestCard();
+  showVocabCard();
 }
-
-function showVocabWriteAnswer() {
-  const item = state.vocabTest.items[state.vocabTest.idx];
-  const el = document.getElementById('vocab-test-answer');
-  el.textContent = `${item.jp} ${item.reading ? '('+item.reading+')' : ''}`;
+function showVocabAnswer(){
+  const item=state.vocabTest.items[state.vocabTest.idx];
+  const el=document.getElementById('pvt-answer');
+  el.textContent=`${item.jp}${item.read?' ('+item.read+')':''}`;
   el.classList.remove('hidden');
 }
-
-function nextVocabWrite() {
-  state.vocabTest.idx++;
-  showVocabTestCard();
-}
+function nextVocabWrite(){state.vocabTest.idx++;showVocabCard();}
 
 // ============================================================
 // CANVAS DRAWING
 // ============================================================
-const canvasStates = {};
-
-function initCanvas(id) {
-  const canvas = document.getElementById(id);
-  if(!canvas || canvasStates[id]) return;
-  const ctx = canvas.getContext('2d');
-  canvas.width = canvas.offsetWidth || 360;
-  let drawing = false, lastX=0, lastY=0;
-  canvasStates[id] = true;
-
-  function getPos(e) {
-    const rect = canvas.getBoundingClientRect();
-    if(e.touches) return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-  }
-
-  canvas.addEventListener('mousedown', e => { drawing=true; const p=getPos(e); lastX=p.x; lastY=p.y; });
-  canvas.addEventListener('mousemove', e => {
-    if(!drawing) return;
-    const p=getPos(e);
-    ctx.strokeStyle = state.drawColors[id] || '#f0f0f0';
-    ctx.lineWidth = 3; ctx.lineCap='round'; ctx.lineJoin='round';
-    ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(p.x,p.y); ctx.stroke();
-    lastX=p.x; lastY=p.y;
-  });
-  canvas.addEventListener('mouseup', ()=>drawing=false);
-  canvas.addEventListener('touchstart', e=>{ e.preventDefault(); drawing=true; const p=getPos(e); lastX=p.x; lastY=p.y; }, {passive:false});
-  canvas.addEventListener('touchmove', e=>{ e.preventDefault();
-    if(!drawing) return;
-    const p=getPos(e);
-    ctx.strokeStyle = state.drawColors[id] || '#f0f0f0';
-    ctx.lineWidth = 4; ctx.lineCap='round'; ctx.lineJoin='round';
-    ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(p.x,p.y); ctx.stroke();
-    lastX=p.x; lastY=p.y;
-  }, {passive:false});
-  canvas.addEventListener('touchend', ()=>drawing=false);
+const _canvasInit={};
+const _drawColor={};
+function initCanvas(id){
+  if(_canvasInit[id])return;
+  const cv=document.getElementById(id);
+  if(!cv)return;
+  cv.width=cv.offsetWidth||360;
+  const ctx=cv.getContext('2d');
+  let drawing=false,lx=0,ly=0;
+  function pos(e){const r=cv.getBoundingClientRect();return e.touches?{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top}:{x:e.clientX-r.left,y:e.clientY-r.top};}
+  cv.addEventListener('mousedown',e=>{drawing=true;const p=pos(e);lx=p.x;ly=p.y;});
+  cv.addEventListener('mousemove',e=>{if(!drawing)return;const p=pos(e);draw(ctx,id,lx,ly,p.x,p.y);lx=p.x;ly=p.y;});
+  cv.addEventListener('mouseup',()=>drawing=false);
+  cv.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=pos(e);lx=p.x;ly=p.y;},{passive:false});
+  cv.addEventListener('touchmove',e=>{e.preventDefault();if(!drawing)return;const p=pos(e);draw(ctx,id,lx,ly,p.x,p.y);lx=p.x;ly=p.y;},{passive:false});
+  cv.addEventListener('touchend',()=>drawing=false);
+  _canvasInit[id]=true;
 }
-
-function clearCanvas(id) {
-  const canvas = document.getElementById(id);
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+function draw(ctx,id,x1,y1,x2,y2){
+  ctx.strokeStyle=_drawColor[id]||'#f0f0f0';
+  ctx.lineWidth=3.5;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
 }
-
-function setColor(color, dotEl, group) {
-  const canvasMap = { undefined:'canvas-kana', trace:'canvas-kanji-trace', kwrite:'canvas-kanji-write', vocab:'canvas-vocab' };
-  const cid = canvasMap[group];
-  if(cid) state.drawColors[cid] = color;
-  dotEl.parentElement.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));
+function clearCanvas(id){const cv=document.getElementById(id);if(cv)cv.getContext('2d').clearRect(0,0,cv.width,cv.height);}
+function setDrawColor(canvasId,color,dotEl){
+  _drawColor[canvasId]=color;
+  dotEl.closest('.canvas-toolbar').querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));
   dotEl.classList.add('active');
-}
-
-// ============================================================
-// RESULT MODAL
-// ============================================================
-function showResult(correct, total) {
-  const pct = total ? Math.round(correct/total*100) : 0;
-  const emoji = pct>=80?'🎉':pct>=60?'😊':'💪';
-  document.getElementById('result-emoji').textContent = emoji;
-  document.getElementById('result-score').textContent = pct + '%';
-  document.getElementById('result-label').textContent = `${total}문제 중 ${correct}개 정답`;
-  document.getElementById('result-modal').classList.add('show');
-}
-
-function closeResultModal() {
-  document.getElementById('result-modal').classList.remove('show');
 }
 
 // ============================================================
 // UTILS
 // ============================================================
-function shuffle(arr) {
-  for(let i=arr.length-1;i>0;i--) {
-    const j=Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]]=[arr[j],arr[i]];
-  }
-  return arr;
-}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 // ============================================================
 // INIT
 // ============================================================
-function init() {
+function init(){
   showKanaTable('hira');
-  buildLevelGrid('kanji-level-grid','kanjiStudy','selectKanjiStudyGrade');
-  buildLevelGrid('kanji-trace-level-grid','kanjiTrace','selectKanjiTraceGrade');
-  buildLevelGrid('kanji-test-level-grid','kanjiFlash','selectKanjiTestGrade');
-  buildLevelGrid('kanji-write-level-grid','kanjiWrite','selectKanjiWriteGrade');
-  state.kanjiWrite.grade = '초1';
-  renderVocabList();
-  updateHomeStats();
-
-  // Init canvases after layout
-  setTimeout(() => {
-    ['canvas-kana','canvas-kanji-trace','canvas-kanji-write','canvas-vocab'].forEach(initCanvas);
-  }, 500);
+  buildGradeGrid();
+  renderVocab();
+  updateHome();
+  initChips('kana-flash-chips');
+  initChips('kana-write-chips');
+  setTimeout(()=>{
+    ['cv-kana-write','cv-kanji-trace','cv-kanji-write','cv-vocab'].forEach(id=>{
+      const cv=document.getElementById(id);
+      if(cv)cv.width=cv.offsetWidth||360;
+    });
+  },300);
 }
-
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
