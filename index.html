@@ -138,6 +138,7 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
 .row .btn{flex:1;margin-bottom:0}
 @keyframes pop{0%{transform:scale(.8);opacity:0}80%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 .pop{animation:pop .3s ease}
+.mode-btn.selected{background:var(--accent)!important;color:white!important;border-color:var(--accent)!important;}
 </style>
 </head>
 <body>
@@ -219,15 +220,15 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
   </label>
 
   <div class="section-title">학습 모드</div>
-  <button class="btn btn-primary" onclick="startKanjiStudy()">📖 암기 카드</button>
-  <button class="btn btn-secondary" onclick="startKanjiTrace()">✏️ 따라쓰기</button>
-  <button class="btn btn-warn" onclick="startKanjiFlash()">⚡ 플래시 테스트</button>
-  <button class="btn btn-success" onclick="startKanjiWriteTest()">🖊 쓰기 테스트</button>
-
+  <button class="btn btn-secondary mode-btn" id="mbtn-study" onclick="selectMode('study')">📖 암기 카드</button>
+  <button class="btn btn-secondary mode-btn" id="mbtn-trace" onclick="selectMode('trace')">✏️ 따라쓰기</button>
+  <button class="btn btn-secondary mode-btn" id="mbtn-flash" onclick="selectMode('flash')">⚡ 플래시 테스트</button>
+  <button class="btn btn-secondary mode-btn" id="mbtn-write" onclick="selectMode('write')">🖊 쓰기 테스트</button>
   <div style="display:flex;align-items:center;gap:10px;margin-top:4px;margin-bottom:4px">
     <span style="font-size:13px;color:var(--text2)">플래시 표시 시간</span>
     <select id="kanji-flash-time"><option value="3">3초</option><option value="5" selected>5초</option><option value="7">7초</option><option value="10">10초</option></select>
   </div>
+  <button class="btn btn-primary" id="kanji-start-btn" onclick="startSelectedKanjiMode()" style="margin-top:6px">▶ 시작</button>
 </div>
 
 <!-- VOCAB MENU -->
@@ -282,7 +283,7 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
     <div class="timer-bar"><div class="timer-fill" id="pkf-timer" style="width:100%"></div></div>
     <div class="flash-card pop" id="pkf-card">
       <div class="flash-char" id="pkf-char">あ</div>
-      <div class="flash-sub">읽어보세요</div>
+      <div class="flash-sub"><span id="pkf-type-badge" style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:12px;margin-bottom:6px;color:var(--accent2)"></span><br>읽어보세요</div>
     </div>
     <div class="answer-box hidden" id="pkf-answer"></div>
     <div class="action-row hidden" id="pkf-btns">
@@ -303,6 +304,7 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
     <div class="flash-card">
       <div class="flash-sub" style="margin-bottom:8px">이 발음을 써보세요</div>
       <div class="flash-char" id="pkw-prompt" style="color:var(--accent2);font-size:60px">あ</div>
+      <div><span id="pkw-type-badge" style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:12px;margin-top:8px;color:var(--accent2)"></span></div>
     </div>
     <div class="canvas-wrap">
       <canvas id="cv-kana-write" height="200"></canvas>
@@ -2270,7 +2272,12 @@ function showKanaTable(type){
 // ============================================================
 function initChips(containerId){
   document.querySelectorAll(`#${containerId} .chip`).forEach(c=>{
-    c.onclick=()=>c.classList.toggle('active');
+    c.onclick=()=>{
+      c.classList.toggle('active');
+      // 최소 1개는 선택 유지
+      const active=document.querySelectorAll(`#${containerId} .chip.active`);
+      if(active.length===0)c.classList.add('active');
+    };
   });
 }
 function getChipVals(containerId){
@@ -2284,8 +2291,8 @@ function buildKanaItems(chipId){
   const types=getChipVals(chipId);
   let items=[];
   KANA_LIST.forEach(k=>{
-    if(types.includes('hira')&&k.hira)items.push({char:k.hira,rom:k.rom});
-    if(types.includes('kata')&&k.kata)items.push({char:k.kata,rom:k.rom});
+    if(types.includes('hira')&&k.hira)items.push({char:k.hira,rom:k.rom,type:'hira'});
+    if(types.includes('kata')&&k.kata)items.push({char:k.kata,rom:k.rom,type:'kata'});
   });
   return shuffle(items);
 }
@@ -2304,6 +2311,7 @@ function showKanaFlashCard(){
   if(f.idx>=f.items.length){closePanel('panel-kana-flash',false);showResultPanel(f.correct,f.total);return;}
   const item=f.items[f.idx];
   document.getElementById('pkf-char').textContent=item.char;
+  document.getElementById('pkf-type-badge').textContent=item.type==='hira'?'히라가나':'카타카나';
   document.getElementById('pkf-answer').classList.add('hidden');
   document.getElementById('pkf-btns').classList.add('hidden');
   document.getElementById('pkf-score').textContent=`${f.correct} / ${f.total}`;
@@ -2344,6 +2352,7 @@ function showKanaWriteCard(){
   const w=state.kanaWrite;
   if(w.idx>=w.items.length){closePanel('panel-kana-write',false);showResultPanel(0,w.items.length);return;}
   document.getElementById('pkw-prompt').textContent=w.items[w.idx].rom;
+  document.getElementById('pkw-type-badge').textContent=w.items[w.idx].type==='hira'?'히라가나':'카타카나';
   document.getElementById('pkw-answer').classList.add('hidden');
   document.getElementById('pkw-progress').textContent=`${w.idx+1} / ${w.items.length}`;
   clearCanvas('cv-kana-write');
@@ -2615,6 +2624,26 @@ function setDrawColor(canvasId,color,dotEl){
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 // ============================================================
+// KANJI MODE SELECTION
+// ============================================================
+let selectedKanjiMode='study';
+function selectMode(mode){
+  selectedKanjiMode=mode;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('mbtn-'+mode).classList.add('selected');
+  // 플래시 시간 선택은 flash 모드일 때만 표시
+  const timeRow=document.querySelector('#screen-kanji select')?.closest('div');
+  if(timeRow)timeRow.style.display=mode==='flash'?'flex':'none';
+}
+function startSelectedKanjiMode(){
+  if(!selectedKanjiMode)return alert('학습 모드를 선택하세요.');
+  if(selectedKanjiMode==='study')startKanjiStudy();
+  else if(selectedKanjiMode==='trace')startKanjiTrace();
+  else if(selectedKanjiMode==='flash')startKanjiFlash();
+  else if(selectedKanjiMode==='write')startKanjiWriteTest();
+}
+
+// ============================================================
 // INIT
 // ============================================================
 function init(){
@@ -2624,6 +2653,9 @@ function init(){
   updateHome();
   initChips('kana-flash-chips');
   initChips('kana-write-chips');
+  // 플래시 시간 선택 숨기기 (기본 모드 선택 전)
+  const timeRow=document.querySelector('#screen-kanji select')?.closest('div');
+  if(timeRow)timeRow.style.display='none';
   setTimeout(()=>{
     ['cv-kana-write','cv-kanji-trace','cv-kanji-write','cv-vocab'].forEach(id=>{
       const cv=document.getElementById(id);
