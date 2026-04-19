@@ -8,6 +8,23 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>日本語 마스터</title>
 <link rel="manifest" href="manifest.json">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDxQSR-5cPlrRlLXPbURFJ8lXZ4N7CGcNE",
+    authDomain: "japanese-59f60.firebaseapp.com",
+    projectId: "japanese-59f60",
+    storageBucket: "japanese-59f60.firebasestorage.app",
+    messagingSenderId: "322108026295",
+    appId: "1:322108026295:web:29ea5fc4616270e99b4c32",
+    measurementId: "G-LR6H5FB8RY"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  firebase.analytics();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -144,12 +161,47 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
 <body>
 
 <!-- ════════════════════════════════════
+     LOGIN PANEL (최초 진입)
+════════════════════════════════════ -->
+<div class="panel active" id="panel-login">
+  <div class="panel-body" style="justify-content:center;align-items:center;min-height:100vh">
+    <div style="width:100%;max-width:340px;margin:auto">
+      <div style="text-align:center;margin-bottom:40px">
+        <div style="font-size:64px;margin-bottom:12px">🎌</div>
+        <h1 style="font-family:'Noto Serif JP',serif;font-size:28px;color:var(--accent);margin-bottom:8px">日本語 마스터</h1>
+        <p style="color:var(--text2);font-size:14px">사용자 이름을 입력하면<br>어느 기기에서나 단어장이 동기화돼요</p>
+      </div>
+      <div class="card">
+        <div class="card-title">👤 사용자 이름</div>
+        <input class="vocab-input" id="login-username" placeholder="이름 입력 (예: 미나, taro)" maxlength="20"
+          onkeydown="if(event.key==='Enter')loginUser()">
+        <div id="login-error" style="color:var(--accent);font-size:13px;margin-bottom:10px;display:none"></div>
+        <button class="btn btn-primary" onclick="loginUser()">시작하기 →</button>
+        <div style="font-size:12px;color:var(--text2);margin-top:10px;text-align:center">
+          같은 이름으로 입력하면 기존 단어장을 불러와요
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
      MENU SCREENS (bottom nav pages)
 ════════════════════════════════════ -->
 
 <!-- HOME -->
 <div class="screen active" id="screen-home">
   <div class="header"><h1>日本語 마스터</h1><p>일본어 실력을 키워보세요</p></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-radius:14px;padding:12px 16px;margin-bottom:14px;border:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px">👤</div>
+      <div>
+        <div style="font-size:15px;font-weight:700" id="home-username">-</div>
+        <div style="font-size:11px;color:var(--text2)">현재 사용자</div>
+      </div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="logoutUser()">로그아웃</button>
+  </div>
   <div class="card">
     <div class="card-title">📊 학습 통계</div>
     <div style="display:flex;gap:10px;text-align:center">
@@ -493,76 +545,6 @@ const COL_LABELS=['a','i','u','e','o'];
 
 const KANA_LIST=[];
 HIRAGANA.forEach((row,ri)=>row.forEach((h,ci)=>{if(h){const rom=ROW_ROM[ri][ci];KANA_LIST.push({hira:h,kata:KATAKANA[ri][ci]||'',rom});}}));
-// DATA
-// ============================================================
-const HIRAGANA = [
-  ['あ','い','う','え','お'],
-  ['か','き','く','け','こ'],
-  ['さ','し','す','せ','そ'],
-  ['た','ち','つ','て','と'],
-  ['な','に','ぬ','ね','の'],
-  ['は','ひ','ふ','へ','ほ'],
-  ['ま','み','む','め','も'],
-  ['や','','ゆ','','よ'],
-  ['ら','り','る','れ','ろ'],
-  ['わ','','を','',''],
-  ['ん','','','',''],
-];
-const KATAKANA = [
-  ['ア','イ','ウ','エ','オ'],
-  ['カ','キ','ク','ケ','コ'],
-  ['サ','シ','ス','セ','ソ'],
-  ['タ','チ','ツ','テ','ト'],
-  ['ナ','ニ','ヌ','ネ','ノ'],
-  ['ハ','ヒ','フ','ヘ','ホ'],
-  ['マ','ミ','ム','メ','モ'],
-  ['ヤ','','ユ','','ヨ'],
-  ['ラ','リ','ル','レ','ロ'],
-  ['ワ','','ヲ','',''],
-  ['ン','','','',''],
-];
-const ROMAJI = ['a','i','u','e','o','ka','ki','ku','ke','ko','sa','shi','su','se','so','ta','chi','tsu','te','to','na','ni','nu','ne','no','ha','hi','fu','he','ho','ma','mi','mu','me','mo','ya','','yu','','yo','ra','ri','ru','re','ro','wa','','wo','','','n'];
-const COL_LABELS = ['a','i','u','e','o'];
-const ROW_LABELS = ['あ단','か단','さ단','た단','な단','は단','ま단','や단','ら단','わ단','ん'];
-
-// Build flat kana list
-const KANA_LIST = [];
-const KANA_READ = {};
-let ri = 0;
-HIRAGANA.forEach((row, ri2) => {
-  row.forEach((h, ci) => {
-    if(h) {
-      const rom = getRomaji(ri2, ci);
-      KANA_LIST.push({hira:h, kata:KATAKANA[ri2][ci]||'', rom});
-      KANA_READ[h] = rom;
-      if(KATAKANA[ri2][ci]) KANA_READ[KATAKANA[ri2][ci]] = rom;
-    }
-  });
-});
-
-function getRomaji(ri, ci) {
-  const all = [];
-  HIRAGANA.forEach(row => row.forEach(h => h && all.push(h)));
-  const flat_rom = ['a','i','u','e','o','ka','ki','ku','ke','ko','sa','shi','su','se','so','ta','chi','tsu','te','to','na','ni','nu','ne','no','ha','hi','fu','he','ho','ma','mi','mu','me','mo','ya','yu','yo','ra','ri','ru','re','ro','wa','wo','n'];
-  const idx = all.length; // just use index
-  // simpler: map by position
-  const rows_rom = [
-    ['a','i','u','e','o'],
-    ['ka','ki','ku','ke','ko'],
-    ['sa','shi','su','se','so'],
-    ['ta','chi','tsu','te','to'],
-    ['na','ni','nu','ne','no'],
-    ['ha','hi','fu','he','ho'],
-    ['ma','mi','mu','me','mo'],
-    ['ya','','yu','','yo'],
-    ['ra','ri','ru','re','ro'],
-    ['wa','','wo','',''],
-    ['n','','','',''],
-  ];
-  return rows_rom[ri] ? rows_rom[ri][ci] || '' : '';
-}
-
-// KANJI DATA - sample set (실제로는 더 많음)
 // 교육한자 1026자 (학년별) + 상용한자 추가 1110자
 const KANJI_DATA = {
   '초1': [
@@ -2196,8 +2178,93 @@ let state = {
   drawColors:{},
   selectedGrade:'초1',
 };
-try{const s=JSON.parse(localStorage.getItem('jp-master')||'{}');if(s.stats)state.stats=s.stats;if(s.vocab)state.vocab=s.vocab;}catch(e){}
-function save(){try{localStorage.setItem('jp-master',JSON.stringify({stats:state.stats,vocab:state.vocab}));}catch(e){}}
+try{const s=JSON.parse(localStorage.getItem('jp-master')||'{}');if(s.stats)state.stats=s.stats;}catch(e){}
+
+// ============================================================
+// FIREBASE USER & VOCAB
+// ============================================================
+let currentUser = null;
+
+async function loginUser() {
+  const input = document.getElementById('login-username');
+  const name = input.value.trim().toLowerCase().replace(/\s+/g,'_');
+  if(!name) {
+    showLoginError('이름을 입력해 주세요');
+    return;
+  }
+  if(name.length < 2) {
+    showLoginError('2글자 이상 입력해 주세요');
+    return;
+  }
+  const btn = document.querySelector('#panel-login .btn-primary');
+  btn.textContent = '불러오는 중...';
+  btn.disabled = true;
+  try {
+    currentUser = name;
+    localStorage.setItem('jp-master-user', name);
+    await loadVocabFromFirebase();
+    document.getElementById('home-username').textContent = name;
+    document.getElementById('panel-login').classList.remove('active');
+    goScreen('screen-home');
+  } catch(e) {
+    showLoginError('연결 오류가 발생했어요. 다시 시도해 주세요.');
+    console.error(e);
+  } finally {
+    btn.textContent = '시작하기 →';
+    btn.disabled = false;
+  }
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function logoutUser() {
+  if(!confirm('로그아웃 하시겠어요?')) return;
+  currentUser = null;
+  state.vocab = [];
+  localStorage.removeItem('jp-master-user');
+  document.getElementById('panel-login').classList.add('active');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+async function loadVocabFromFirebase() {
+  if(!currentUser) return;
+  try {
+    const doc = await db.collection('users').doc(currentUser).get();
+    if(doc.exists && doc.data().vocab) {
+      state.vocab = doc.data().vocab;
+    } else {
+      state.vocab = [];
+    }
+    renderVocab();
+  } catch(e) {
+    console.error('단어장 불러오기 실패:', e);
+  }
+}
+
+async function saveVocabToFirebase() {
+  if(!currentUser) return;
+  try {
+    await db.collection('users').doc(currentUser).set({
+      vocab: state.vocab,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  } catch(e) {
+    console.error('단어장 저장 실패:', e);
+  }
+}
+
+function save() {
+  try { localStorage.setItem('jp-master', JSON.stringify({stats: state.stats})); } catch(e) {}
+  saveVocabToFirebase();
+}
+
+function recordAnswer(ok){state.stats.total++;if(ok)state.stats.correct++;const t=new Date().toDateString();if(state.stats.lastDate!==t){state.stats.streak++;state.stats.lastDate=t;}try{localStorage.setItem('jp-master',JSON.stringify({stats:state.stats}));}catch(e){}}
 function recordAnswer(ok){state.stats.total++;if(ok)state.stats.correct++;const t=new Date().toDateString();if(state.stats.lastDate!==t){state.stats.streak++;state.stats.lastDate=t;}save();}
 
 // ============================================================
@@ -2650,9 +2717,19 @@ function init(){
   updateHome();
   initChips('kana-flash-chips');
   initChips('kana-write-chips');
-  // 플래시 시간 선택 숨기기 (기본 모드 선택 전)
   const timeRow=document.querySelector('#screen-kanji select')?.closest('div');
   if(timeRow)timeRow.style.display='none';
+  // 저장된 사용자 자동 로그인
+  const savedUser = localStorage.getItem('jp-master-user');
+  if(savedUser) {
+    currentUser = savedUser;
+    document.getElementById('home-username').textContent = savedUser;
+    document.getElementById('login-username').value = savedUser;
+    loadVocabFromFirebase().then(()=>{
+      document.getElementById('panel-login').classList.remove('active');
+      goScreen('screen-home');
+    });
+  }
   setTimeout(()=>{
     ['cv-kana-write','cv-kanji-trace','cv-kanji-write','cv-vocab'].forEach(id=>{
       const cv=document.getElementById(id);
