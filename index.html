@@ -2181,28 +2181,22 @@ let state = {
 try{const s=JSON.parse(localStorage.getItem('jp-master')||'{}');if(s.stats)state.stats=s.stats;}catch(e){}
 
 // ============================================================
-// FIREBASE USER & VOCAB
+// FIREBASE USER & 데이터 동기화
 // ============================================================
 let currentUser = null;
 
 async function loginUser() {
   const input = document.getElementById('login-username');
   const name = input.value.trim().toLowerCase().replace(/\s+/g,'_');
-  if(!name) {
-    showLoginError('이름을 입력해 주세요');
-    return;
-  }
-  if(name.length < 2) {
-    showLoginError('2글자 이상 입력해 주세요');
-    return;
-  }
+  if(!name) { showLoginError('이름을 입력해 주세요'); return; }
+  if(name.length < 2) { showLoginError('2글자 이상 입력해 주세요'); return; }
   const btn = document.querySelector('#panel-login .btn-primary');
   btn.textContent = '불러오는 중...';
   btn.disabled = true;
   try {
     currentUser = name;
     localStorage.setItem('jp-master-user', name);
-    await loadVocabFromFirebase();
+    await loadFromFirebase();
     document.getElementById('home-username').textContent = name;
     document.getElementById('panel-login').classList.remove('active');
     goScreen('screen-home');
@@ -2225,47 +2219,70 @@ function logoutUser() {
   if(!confirm('로그아웃 하시겠어요?')) return;
   currentUser = null;
   state.vocab = [];
+  state.stats = { total:0, correct:0, streak:0, lastDate:'' };
   localStorage.removeItem('jp-master-user');
   document.getElementById('panel-login').classList.add('active');
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('login-username').value = '';
   document.getElementById('login-error').style.display = 'none';
+  updateHome();
 }
 
-async function loadVocabFromFirebase() {
+// Firebase에서 단어장 + 통계 불러오기
+async function loadFromFirebase() {
   if(!currentUser) return;
   try {
     const doc = await db.collection('users').doc(currentUser).get();
-    if(doc.exists && doc.data().vocab) {
-      state.vocab = doc.data().vocab;
+    if(doc.exists) {
+      const data = doc.data();
+      if(data.vocab) state.vocab = data.vocab;
+      if(data.stats) {
+        // Firebase 통계와 로컬 통계 중 더 큰 값으로 병합
+        const fs = data.stats;
+        state.stats.total = Math.max(state.stats.total, fs.total||0);
+        state.stats.correct = Math.max(state.stats.correct, fs.correct||0);
+        state.stats.streak = Math.max(state.stats.streak, fs.streak||0);
+        if(!state.stats.lastDate) state.stats.lastDate = fs.lastDate||'';
+      }
     } else {
       state.vocab = [];
     }
     renderVocab();
+    updateHome();
   } catch(e) {
-    console.error('단어장 불러오기 실패:', e);
+    console.error('데이터 불러오기 실패:', e);
   }
 }
 
-async function saveVocabToFirebase() {
+// Firebase에 단어장 + 통계 저장
+async function saveToFirebase() {
   if(!currentUser) return;
   try {
     await db.collection('users').doc(currentUser).set({
       vocab: state.vocab,
+      stats: state.stats,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
   } catch(e) {
-    console.error('단어장 저장 실패:', e);
+    console.error('데이터 저장 실패:', e);
   }
 }
 
 function save() {
   try { localStorage.setItem('jp-master', JSON.stringify({stats: state.stats})); } catch(e) {}
-  saveVocabToFirebase();
+  saveToFirebase();
 }
 
-function recordAnswer(ok){state.stats.total++;if(ok)state.stats.correct++;const t=new Date().toDateString();if(state.stats.lastDate!==t){state.stats.streak++;state.stats.lastDate=t;}try{localStorage.setItem('jp-master',JSON.stringify({stats:state.stats}));}catch(e){}}
-function recordAnswer(ok){state.stats.total++;if(ok)state.stats.correct++;const t=new Date().toDateString();if(state.stats.lastDate!==t){state.stats.streak++;state.stats.lastDate=t;}save();}
+function recordAnswer(ok) {
+  state.stats.total++;
+  if(ok) state.stats.correct++;
+  const t = new Date().toDateString();
+  if(state.stats.lastDate !== t) {
+    state.stats.streak++;
+    state.stats.lastDate = t;
+  }
+  save();
+}
 
 // ============================================================
 // NAVIGATION
@@ -2725,7 +2742,7 @@ function init(){
     currentUser = savedUser;
     document.getElementById('home-username').textContent = savedUser;
     document.getElementById('login-username').value = savedUser;
-    loadVocabFromFirebase().then(()=>{
+    loadFromFirebase().then(()=>{
       document.getElementById('panel-login').classList.remove('active');
       goScreen('screen-home');
     });
