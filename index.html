@@ -190,8 +190,8 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
   <div class="card">
     <div class="card-title">플래시 테스트 — 글자 보고 읽기</div>
     <div id="kana-flash-chips" style="margin-bottom:10px">
-      <span class="chip active" data-val="hira">히라가나</span>
-      <span class="chip active" data-val="kata">카타카나</span>
+      <span class="chip active" data-val="hira" onclick="toggleChip(this,'kana-flash-chips')">히라가나</span>
+      <span class="chip active" data-val="kata" onclick="toggleChip(this,'kana-flash-chips')">카타카나</span>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
       <span style="font-size:13px;color:var(--text2)">표시 시간</span>
@@ -202,8 +202,8 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
   <div class="card">
     <div class="card-title">쓰기 테스트 — 발음 보고 글자 쓰기</div>
     <div id="kana-write-chips" style="margin-bottom:12px">
-      <span class="chip active" data-val="hira">히라가나</span>
-      <span class="chip active" data-val="kata">카타카나</span>
+      <span class="chip active" data-val="hira" onclick="toggleChip(this,'kana-write-chips')">히라가나</span>
+      <span class="chip active" data-val="kata" onclick="toggleChip(this,'kana-write-chips')">카타카나</span>
     </div>
     <button class="btn btn-success" onclick="startKanaWrite()">▶ 시작</button>
   </div>
@@ -2270,16 +2270,13 @@ function showKanaTable(type){
 // ============================================================
 // CHIP HELPERS
 // ============================================================
-function initChips(containerId){
-  document.querySelectorAll(`#${containerId} .chip`).forEach(c=>{
-    c.onclick=()=>{
-      c.classList.toggle('active');
-      // 최소 1개는 선택 유지
-      const active=document.querySelectorAll(`#${containerId} .chip.active`);
-      if(active.length===0)c.classList.add('active');
-    };
-  });
+function toggleChip(el, containerId){
+  el.classList.toggle('active');
+  // 최소 1개는 선택 유지
+  const active=document.querySelectorAll(`#${containerId} .chip.active`);
+  if(active.length===0) el.classList.add('active');
 }
+function initChips(containerId){} // 더 이상 사용 안 함
 function getChipVals(containerId){
   return [...document.querySelectorAll(`#${containerId} .chip.active`)].map(c=>c.dataset.val);
 }
