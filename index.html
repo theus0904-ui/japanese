@@ -152,6 +152,10 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
 /* ── MISC ── */
 .hidden{display:none!important}
 .row{display:flex;gap:8px}
+.speak-btn{background:none;border:2px solid var(--border);border-radius:50%;width:48px;height:48px;font-size:22px;cursor:pointer;transition:all .2s;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.speak-btn:active{background:var(--surface2);transform:scale(.9)}
+.speak-btn.speaking{border-color:var(--accent3);animation:speak-pulse 1s infinite}
+@keyframes speak-pulse{0%,100%{box-shadow:0 0 0 0 rgba(78,205,196,.4)}50%{box-shadow:0 0 0 8px rgba(78,205,196,0)}}
 .row .btn{flex:1;margin-bottom:0}
 @keyframes pop{0%{transform:scale(.8);opacity:0}80%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 .pop{animation:pop .3s ease}
@@ -336,6 +340,7 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
     <div class="flash-card pop" id="pkf-card">
       <div class="flash-char" id="pkf-char">あ</div>
       <div class="flash-sub"><span id="pkf-type-badge" style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:12px;margin-bottom:6px;color:var(--accent2)"></span><br>읽어보세요</div>
+      <button class="speak-btn" id="speak-pkf" onclick="speak(document.getElementById('pkf-char').textContent)" style="margin:12px auto 0" title="발음 듣기">🔊</button>
     </div>
     <div class="answer-box hidden" id="pkf-answer"></div>
     <div class="action-row hidden" id="pkf-btns">
@@ -357,6 +362,9 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
       <div class="flash-sub" style="margin-bottom:8px">이 발음을 써보세요</div>
       <div class="flash-char" id="pkw-prompt" style="color:var(--accent2);font-size:60px">あ</div>
       <div><span id="pkw-type-badge" style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:12px;margin-top:8px;color:var(--accent2)"></span></div>
+    </div>
+    <div style="text-align:center">
+      <button class="speak-btn" onclick="speakKanaWrite()" title="발음 듣기">🔊</button>
     </div>
     <div class="canvas-wrap">
       <canvas id="cv-kana-write" height="200"></canvas>
@@ -389,6 +397,7 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
       <div class="kanji-big" id="pks-char">漢</div>
       <div class="kanji-reading" id="pks-reading"></div>
       <div class="kanji-meaning" id="pks-meaning"></div>
+      <button class="speak-btn" onclick="speak(document.getElementById('pks-char').textContent)" style="margin:12px auto 0" title="발음 듣기">🔊</button>
     </div>
     <div class="action-row">
       <button class="btn btn-secondary" onclick="prevKanjiStudy()">← 이전</button>
@@ -439,6 +448,7 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
     <div class="flash-card pop" id="pkfl-card">
       <div class="flash-char kanji-font" id="pkfl-char">漢</div>
       <div class="flash-sub">읽어보세요</div>
+      <button class="speak-btn" onclick="speak(document.getElementById('pkfl-char').textContent)" style="margin:12px auto 0" title="발음 듣기">🔊</button>
     </div>
     <div class="answer-box hidden" id="pkfl-answer"></div>
     <div class="action-row hidden" id="pkfl-btns">
@@ -471,6 +481,9 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
       </div>
     </div>
     <div class="answer-box hidden" id="pkwt-answer"></div>
+    <div style="text-align:center;margin-top:-8px;margin-bottom:8px" id="pkwt-speak-wrap" class="hidden">
+      <button class="speak-btn" onclick="speak(state.kanjiWrite.items[state.kanjiWrite.idx]?.k)" title="발음 듣기">🔊</button>
+    </div>
     <div class="action-row">
       <button class="btn btn-secondary" onclick="showKanjiWriteAnswer()">정답 보기</button>
       <button class="btn btn-primary" onclick="nextKanjiWrite()">다음 →</button>
@@ -500,6 +513,9 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
       </div>
     </div>
     <div class="answer-box hidden" id="pvt-answer"></div>
+    <div style="text-align:center;margin-top:-8px;margin-bottom:8px" id="pvt-speak-wrap" class="hidden">
+      <button class="speak-btn" onclick="speakVocabAnswer()" title="발음 듣기">🔊</button>
+    </div>
     <div class="action-row hidden" id="pvt-flash-btns">
       <button class="btn btn-secondary" onclick="vocabNext(false)">❌ 틀림</button>
       <button class="btn btn-success" onclick="vocabNext(true)">✅ 맞음</button>
@@ -2343,7 +2359,7 @@ function showKanaTable(type){
   data.forEach((row,ri)=>{
     html+=`<tr><th>${ROW_LABELS[ri]}</th>`;
     row.forEach((ch,ci)=>{
-      if(ch)html+=`<td>${ch}<small>${ROW_ROM[ri][ci]}</small></td>`;
+      if(ch)html+=`<td onclick="speakText('${ch}')" style="cursor:pointer">${ch}<small>${ROW_ROM[ri][ci]}</small></td>`;
       else html+=`<td class="empty"></td>`;
     });
     html+='</tr>';
@@ -2405,6 +2421,7 @@ function showKanaFlashCard(){
     document.getElementById('pkf-answer').textContent=item.rom;
     document.getElementById('pkf-answer').classList.remove('hidden');
     document.getElementById('pkf-btns').classList.remove('hidden');
+    speakText(item.char);
   },sec*1000);
 }
 
@@ -2540,6 +2557,7 @@ function showKanjiFlashCard(){
     document.getElementById('pkfl-answer').textContent=`${item2.r}　${item2.m}`;
     document.getElementById('pkfl-answer').classList.remove('hidden');
     document.getElementById('pkfl-btns').classList.remove('hidden');
+    speakText(item2.k);
   },sec*1000);
 }
 function kanjiFlashNext(ok){
@@ -2568,6 +2586,7 @@ function showKanjiWriteCard(){
   document.getElementById('pkwt-meaning').textContent=item.m;
   document.getElementById('pkwt-reading').textContent=`읽기: ${item.r}`;
   document.getElementById('pkwt-answer').classList.add('hidden');
+  document.getElementById('pkwt-speak-wrap').classList.add('hidden');
   document.getElementById('pkwt-progress').textContent=`${w.idx+1} / ${w.items.length}`;
   clearCanvas('cv-kanji-write');
 }
@@ -2576,6 +2595,8 @@ function showKanjiWriteAnswer(){
   const el=document.getElementById('pkwt-answer');
   el.textContent=item.k;el.style.fontSize='60px';el.style.fontFamily="'Noto Serif JP',serif";
   el.classList.remove('hidden');
+  document.getElementById('pkwt-speak-wrap').classList.remove('hidden');
+  speakText(item.k);
 }
 function nextKanjiWrite(){state.kanjiWrite.idx++;showKanjiWriteCard();}
 
@@ -2608,7 +2629,7 @@ function renderVocab(){
   document.getElementById('vocab-count-label').textContent=`저장된 단어 ${state.vocab.length}개`;
   const el=document.getElementById('vocab-list-el');
   if(!state.vocab.length){el.innerHTML='<div style="text-align:center;color:var(--text2);padding:30px">아직 단어가 없어요</div>';return;}
-  el.innerHTML=state.vocab.map((v,i)=>`<div class="vocab-item"><div class="vocab-jp">${v.jp}</div><div class="vocab-info"><div class="vocab-reading">${v.read||''}</div><div class="vocab-meaning">${v.mean}</div></div><button class="vocab-del" onclick="deleteVocab(${i})">🗑</button></div>`).join('');
+  el.innerHTML=state.vocab.map((v,i)=>`<div class="vocab-item"><div class="vocab-jp">${v.jp}</div><div class="vocab-info"><div class="vocab-reading">${v.read||''}</div><div class="vocab-meaning">${v.mean}</div></div><button class="speak-btn" onclick="speak('${v.jp.replace(/'/g,"\\'")}')">🔊</button><button class="vocab-del" onclick="deleteVocab(${i})">🗑</button></div>`).join('');
 }
 function startVocabTest(){
   if(!state.vocab.length)return alert('단어장이 비어있어요.');
@@ -2628,6 +2649,7 @@ function showVocabCard(){
   document.getElementById('pvt-flash-btns').classList.add('hidden');
   document.getElementById('pvt-write-btns').classList.add('hidden');
   document.getElementById('pvt-canvas-wrap').classList.add('hidden');
+  document.getElementById('pvt-speak-wrap').classList.add('hidden');
   if(t.mode==='jp'){
     document.getElementById('pvt-label').textContent='뜻을 맞춰보세요';
     document.getElementById('pvt-q').textContent=item.jp+(item.read?`\n${item.read}`:'');
@@ -2640,6 +2662,8 @@ function showVocabCard(){
       document.getElementById('pvt-answer').textContent=item.mean;
       document.getElementById('pvt-answer').classList.remove('hidden');
       document.getElementById('pvt-flash-btns').classList.remove('hidden');
+      document.getElementById('pvt-speak-wrap').classList.remove('hidden');
+      speakText(item.jp);
     },sec*1000);
   }else{
     document.getElementById('pvt-timer').style.width='100%';
@@ -2663,6 +2687,8 @@ function showVocabAnswer(){
   const el=document.getElementById('pvt-answer');
   el.textContent=`${item.jp}${item.read?' ('+item.read+')':''}`;
   el.classList.remove('hidden');
+  document.getElementById('pvt-speak-wrap').classList.remove('hidden');
+  speakText(item.jp);
 }
 function nextVocabWrite(){state.vocabTest.idx++;showVocabCard();}
 
@@ -2700,8 +2726,43 @@ function setDrawColor(canvasId,color,dotEl){
 }
 
 // ============================================================
-// UTILS
+// SPEECH (Web Speech API)
 // ============================================================
+let currentSpeakBtn = null;
+function speak(text) {
+  if(!text || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'ja-JP';
+  utter.rate = 0.9;
+  utter.pitch = 1.0;
+  // 버튼 애니메이션
+  const btn = event?.target?.closest('.speak-btn');
+  if(btn) {
+    if(currentSpeakBtn) currentSpeakBtn.classList.remove('speaking');
+    currentSpeakBtn = btn;
+    btn.classList.add('speaking');
+    utter.onend = () => btn.classList.remove('speaking');
+    utter.onerror = () => btn.classList.remove('speaking');
+  }
+  window.speechSynthesis.speak(utter);
+}
+function speakText(text) {
+  if(!text || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'ja-JP';
+  utter.rate = 0.9;
+  window.speechSynthesis.speak(utter);
+}
+function speakKanaWrite() {
+  const item = state.kanaWrite.items[state.kanaWrite.idx];
+  if(item) speak(item.char);
+}
+function speakVocabAnswer() {
+  const item = state.vocabTest.items[state.vocabTest.idx];
+  if(item) speakText(item.jp);
+}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 // ============================================================
