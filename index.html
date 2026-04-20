@@ -141,6 +141,14 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
 .vocab-reading{font-size:13px;color:var(--accent3)}
 .vocab-meaning{font-size:14px;color:var(--text2)}
 .vocab-del{background:none;border:none;color:var(--accent);font-size:20px;cursor:pointer;padding:4px}
+.dict-item{background:var(--surface2);border-radius:12px;padding:12px 14px;border:1px solid var(--border);cursor:pointer;transition:all .15s;margin-bottom:6px}
+.dict-item:active{border-color:var(--accent);background:var(--surface)}
+.dict-item-jp{font-size:18px;font-weight:700;margin-bottom:3px}
+.dict-item-read{font-size:13px;color:var(--accent3);margin-bottom:2px}
+.dict-item-mean{font-size:12px;color:var(--text2)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border-radius:20px;padding:24px;width:100%;max-width:360px;border:1px solid var(--border);box-shadow:var(--shadow)}
 .nav-progress{font-size:13px;color:var(--text2);margin-left:auto}
 
 /* ── RESULT PANEL ── */
@@ -156,6 +164,14 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
 .speak-btn:active{background:var(--surface2);transform:scale(.9)}
 .speak-btn.speaking{border-color:var(--accent3);animation:speak-pulse 1s infinite}
 @keyframes speak-pulse{0%,100%{box-shadow:0 0 0 0 rgba(78,205,196,.4)}50%{box-shadow:0 0 0 8px rgba(78,205,196,0)}}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border-radius:20px;padding:24px;width:100%;max-width:360px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.dict-item{background:var(--surface2);border-radius:12px;padding:12px 14px;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.dict-item:active{background:var(--surface);border-color:var(--accent)}
+.dict-item-jp{font-size:18px;font-weight:700;margin-bottom:4px}
+.dict-item-read{font-size:13px;color:var(--accent3);margin-bottom:2px}
+.dict-item-mean{font-size:13px;color:var(--text2)}
 .row .btn{flex:1;margin-bottom:0}
 @keyframes pop{0%{transform:scale(.8);opacity:0}80%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 .pop{animation:pop .3s ease}
@@ -226,7 +242,7 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
   <div class="section-title">빠른 시작</div>
   <button class="btn btn-primary" onclick="goScreen('screen-kana')">🎌 히라가나 · 카타카나</button>
   <button class="btn btn-warn" onclick="goScreen('screen-kanji')">漢 한자 학습</button>
-  <button class="btn btn-success" onclick="goScreen('screen-vocab')">📖 내 단어장</button>
+  <button class="btn btn-success" onclick="goScreen('screen-vocab')">📖 단어장</button>
 </div>
 
 <!-- KANA MENU -->
@@ -289,7 +305,7 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
 
 <!-- VOCAB MENU -->
 <div class="screen" id="screen-vocab">
-  <div class="header"><h1>내 단어장</h1><p>수업에서 배운 단어를 저장하세요</p></div>
+  <div class="header"><h1>단어장</h1><p>수업에서 배운 단어를 저장하세요</p></div>
 
   <div class="gojuuon-tabs">
     <button class="tab-btn active" onclick="setVocabTab('list')">단어 목록</button>
@@ -298,11 +314,23 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
 
   <div id="vocab-list-tab">
     <div class="card">
-      <div class="card-title">새 단어 추가</div>
-      <input class="vocab-input" id="vi-jp" placeholder="일본어 (예: 食べる)">
+      <div class="card-title" id="vocab-form-title">단어 추가 — 하나만 입력해도 사전 검색 가능</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input class="vocab-input" id="vi-jp" placeholder="일본어 (예: 食べる)" style="margin-bottom:0;flex:1" oninput="clearDictResults()" onkeydown="if(event.key==='Enter')searchDict()">
+        <button class="btn btn-secondary btn-sm" onclick="searchDict()" style="white-space:nowrap">🔍 검색</button>
+      </div>
       <input class="vocab-input" id="vi-read" placeholder="읽기 (예: たべる)">
       <input class="vocab-input" id="vi-mean" placeholder="뜻 (예: 먹다)">
-      <button class="btn btn-primary" onclick="addVocab()">➕ 추가</button>
+      <div id="dict-loading" class="hidden" style="text-align:center;color:var(--text2);font-size:13px;padding:10px">검색 중...</div>
+      <div id="dict-error" class="hidden" style="color:var(--accent);font-size:13px;margin-bottom:8px"></div>
+      <div id="dict-results" class="hidden">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px">검색 결과 — 선택하면 자동 입력</div>
+        <div id="dict-result-list"></div>
+      </div>
+      <div class="row" style="margin-top:4px">
+        <button class="btn btn-secondary" onclick="cancelVocabEdit()">초기화</button>
+        <button class="btn btn-primary" onclick="addVocab()" id="vocab-add-btn">➕ 추가</button>
+      </div>
     </div>
     <div class="section-title" id="vocab-count-label">저장된 단어 0개</div>
     <div class="vocab-list" id="vocab-list-el"></div>
@@ -555,6 +583,20 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
     <div class="action-row hidden" id="pvt-write-btns">
       <button class="btn btn-secondary" onclick="showVocabAnswer()">정답 보기</button>
       <button class="btn btn-primary" onclick="nextVocabWrite()">다음 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- VOCAB EDIT MODAL -->
+<div class="modal-overlay" id="modal-vocab-edit">
+  <div class="modal" style="text-align:left">
+    <div style="font-size:17px;font-weight:700;margin-bottom:16px">단어 수정</div>
+    <input class="vocab-input" id="edit-jp" placeholder="일본어">
+    <input class="vocab-input" id="edit-read" placeholder="읽기">
+    <input class="vocab-input" id="edit-mean" placeholder="뜻">
+    <div class="row" style="margin-top:4px">
+      <button class="btn btn-secondary" onclick="closeEditModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveVocabEdit()">저장</button>
     </div>
   </div>
 </div>
@@ -1878,6 +1920,7 @@ let state = {
   vocabTest:{ mode:'jp', items:[], idx:0, correct:0, total:0, timer:null },
   drawColors:{},
   selectedGrade:'초1',
+  _editIdx:-1,
 };
 try{const s=JSON.parse(localStorage.getItem('jp-master')||'{}');if(s.stats)state.stats=s.stats;}catch(e){}
 
@@ -2307,19 +2350,87 @@ function addVocab(){
   const jp=document.getElementById('vi-jp').value.trim();
   const read=document.getElementById('vi-read').value.trim();
   const mean=document.getElementById('vi-mean').value.trim();
-  if(!jp||!mean)return alert('일본어와 뜻은 필수입니다.');
-  state.vocab.push({jp,read,mean,id:Date.now()});
+  if(!jp||!mean){alert('일본어와 뜻은 필수입니다.');return;}
+  if(state._editIdx>=0){
+    state.vocab[state._editIdx]={jp,read,mean,id:state.vocab[state._editIdx].id};
+    state._editIdx=-1;
+    document.getElementById('vocab-add-btn').textContent='➕ 추가';
+    document.getElementById('vocab-form-title').textContent='단어 추가 — 하나만 입력해도 사전 검색 가능';
+  }else{
+    state.vocab.push({jp,read,mean,id:Date.now()});
+  }
   save();
-  ['vi-jp','vi-read','vi-mean'].forEach(id=>document.getElementById(id).value='');
+  cancelVocabEdit();
   renderVocab();
 }
-function deleteVocab(i){state.vocab.splice(i,1);save();renderVocab();}
+function cancelVocabEdit(){
+  ['vi-jp','vi-read','vi-mean'].forEach(id=>document.getElementById(id).value='');
+  clearDictResults();
+  state._editIdx=-1;
+  document.getElementById('vocab-add-btn').textContent='➕ 추가';
+  document.getElementById('vocab-form-title').textContent='단어 추가 — 하나만 입력해도 사전 검색 가능';
+}
+function editVocab(i){
+  const v=state.vocab[i];
+  document.getElementById('vi-jp').value=v.jp;
+  document.getElementById('vi-read').value=v.read||'';
+  document.getElementById('vi-mean').value=v.mean;
+  state._editIdx=i;
+  document.getElementById('vocab-add-btn').textContent='✏️ 수정 저장';
+  document.getElementById('vocab-form-title').textContent='단어 수정 중';
+  document.getElementById('vi-jp').scrollIntoView({behavior:'smooth',block:'center'});
+  document.getElementById('vi-jp').focus();
+}
+function deleteVocab(i){
+  if(!confirm('삭제하시겠어요?'))return;
+  state.vocab.splice(i,1);save();renderVocab();
+}
 function renderVocab(){
   document.getElementById('vocab-count-label').textContent=`저장된 단어 ${state.vocab.length}개`;
   const el=document.getElementById('vocab-list-el');
   if(!state.vocab.length){el.innerHTML='<div style="text-align:center;color:var(--text2);padding:30px">아직 단어가 없어요</div>';return;}
-  el.innerHTML=state.vocab.map((v,i)=>`<div class="vocab-item"><div class="vocab-jp">${v.jp}</div><div class="vocab-info"><div class="vocab-reading">${v.read||''}</div><div class="vocab-meaning">${v.mean}</div></div><button class="speak-btn" onclick="speak('${v.jp.replace(/'/g,"\\'")}')">🔊</button><button class="vocab-del" onclick="deleteVocab(${i})">🗑</button></div>`).join('');
+  el.innerHTML=state.vocab.map((v,i)=>`<div class="vocab-item"><div class="vocab-jp">${v.jp}</div><div class="vocab-info"><div class="vocab-reading">${v.read||''}</div><div class="vocab-meaning">${v.mean}</div></div><button class="speak-btn" style="width:36px;height:36px;font-size:16px" onclick="speak('${v.jp.replace(/'/g,"\\'")}')">🔊</button><button class="speak-btn" style="width:36px;height:36px;font-size:16px;border-color:var(--accent2)" onclick="editVocab(${i})">✏️</button><button class="vocab-del" onclick="deleteVocab(${i})">🗑</button></div>`).join('');
 }
+async function searchDict(){
+  const q=document.getElementById('vi-jp').value.trim()||document.getElementById('vi-read').value.trim()||document.getElementById('vi-mean').value.trim();
+  if(!q){alert('검색어를 입력해 주세요');return;}
+  document.getElementById('dict-loading').classList.remove('hidden');
+  document.getElementById('dict-results').classList.add('hidden');
+  document.getElementById('dict-error').classList.add('hidden');
+  try{
+    const res=await fetch(`https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(q)}`);
+    const data=await res.json();
+    document.getElementById('dict-loading').classList.add('hidden');
+    if(!data.data||!data.data.length){
+      const errEl=document.getElementById('dict-error');
+      errEl.textContent='검색 결과가 없어요';errEl.classList.remove('hidden');return;
+    }
+    const results=data.data.slice(0,6).map(e=>({
+      jp:e.japanese[0]?.word||e.japanese[0]?.reading||'',
+      read:e.japanese[0]?.reading||'',
+      mean:e.senses[0]?.english_definitions?.slice(0,3).join(', ')||''
+    })).filter(r=>r.jp);
+    const list=document.getElementById('dict-result-list');
+    list.innerHTML=results.map((r,i)=>`<div class="dict-item" onclick="selectDict(${i})"><div class="dict-item-jp">${r.jp}</div><div class="dict-item-read">${r.read}</div><div class="dict-item-mean">${r.mean}</div></div>`).join('');
+    list._data=results;
+    document.getElementById('dict-results').classList.remove('hidden');
+  }catch(e){
+    document.getElementById('dict-loading').classList.add('hidden');
+    const errEl=document.getElementById('dict-error');
+    errEl.textContent='검색 오류. 인터넷 연결을 확인하세요.';errEl.classList.remove('hidden');
+  }
+}
+function selectDict(i){
+  const r=document.getElementById('dict-result-list')._data[i];
+  document.getElementById('vi-jp').value=r.jp;
+  document.getElementById('vi-read').value=r.read;
+  document.getElementById('vi-mean').value=r.mean;
+  clearDictResults();
+}
+function clearDictResults(){
+  ['dict-results','dict-error','dict-loading'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+}
+function clearSearchResults(){clearDictResults();}
 function startVocabTest(){
   if(!state.vocab.length)return alert('단어장이 비어있어요.');
   const items=shuffle([...state.vocab]);
