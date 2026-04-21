@@ -2398,30 +2398,48 @@ async function searchDict(){
   document.getElementById('dict-results').classList.add('hidden');
   document.getElementById('dict-error').classList.add('hidden');
   const jishoUrl=`https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(q)}`;
-  const proxyUrl=`https://corsproxy.io/?${encodeURIComponent(jishoUrl)}`;
+  // allorigins /get 방식 먼저 (응답: {contents:"..."})
+  let data=null;
   try{
-    const res=await fetch(proxyUrl);
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    document.getElementById('dict-loading').classList.add('hidden');
-    if(!data.data||!data.data.length){
-      const errEl=document.getElementById('dict-error');
-      errEl.textContent='검색 결과가 없어요';errEl.classList.remove('hidden');return;
+    const res=await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(jishoUrl)}`,{signal:AbortSignal.timeout(10000)});
+    if(res.ok){
+      const raw=await res.json();
+      if(raw.contents) data=JSON.parse(raw.contents);
     }
-    const results=data.data.slice(0,6).map(e=>({
-      jp:e.japanese[0]?.word||e.japanese[0]?.reading||'',
-      read:e.japanese[0]?.reading||'',
-      mean:e.senses[0]?.english_definitions?.slice(0,3).join(', ')||''
-    })).filter(r=>r.jp);
-    const list=document.getElementById('dict-result-list');
-    list.innerHTML=results.map((r,i)=>`<div class="dict-item" onclick="selectDict(${i})"><div class="dict-item-jp">${r.jp}</div><div class="dict-item-read">${r.read}</div><div class="dict-item-mean">${r.mean}</div></div>`).join('');
-    list._data=results;
-    document.getElementById('dict-results').classList.remove('hidden');
-  }catch(e){
-    document.getElementById('dict-loading').classList.add('hidden');
-    const errEl=document.getElementById('dict-error');
-    errEl.textContent='검색 오류. 잠시 후 다시 시도해 주세요.';errEl.classList.remove('hidden');
+  }catch(e){}
+  // 실패시 allorigins /raw 시도
+  if(!data?.data){
+    try{
+      const res=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(jishoUrl)}`,{signal:AbortSignal.timeout(10000)});
+      if(res.ok) data=await res.json();
+    }catch(e){}
   }
+  // 실패시 corsproxy 시도
+  if(!data?.data){
+    try{
+      const res=await fetch(`https://corsproxy.io/?${encodeURIComponent(jishoUrl)}`,{signal:AbortSignal.timeout(10000)});
+      if(res.ok) data=await res.json();
+    }catch(e){}
+  }
+  document.getElementById('dict-loading').classList.add('hidden');
+  if(!data?.data){
+    const errEl=document.getElementById('dict-error');
+    errEl.textContent='검색 오류. 잠시 후 다시 시도해 주세요.';
+    errEl.classList.remove('hidden');return;
+  }
+  if(!data.data.length){
+    const errEl=document.getElementById('dict-error');
+    errEl.textContent='검색 결과가 없어요';errEl.classList.remove('hidden');return;
+  }
+  const results=data.data.slice(0,6).map(e=>({
+    jp:e.japanese[0]?.word||e.japanese[0]?.reading||'',
+    read:e.japanese[0]?.reading||'',
+    mean:e.senses[0]?.english_definitions?.slice(0,3).join(', ')||''
+  })).filter(r=>r.jp);
+  const list=document.getElementById('dict-result-list');
+  list.innerHTML=results.map((r,i)=>`<div class="dict-item" onclick="selectDict(${i})"><div class="dict-item-jp">${r.jp}</div><div class="dict-item-read">${r.read}</div><div class="dict-item-mean">${r.mean}</div></div>`).join('');
+  list._data=results;
+  document.getElementById('dict-results').classList.remove('hidden');
 }
 function selectDict(i){
   const r=document.getElementById('dict-result-list')._data[i];
