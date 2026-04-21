@@ -319,8 +319,8 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
         <input class="vocab-input" id="vi-jp" placeholder="일본어 또는 읽기로 검색 가능" style="margin-bottom:0;flex:1" oninput="clearDictResults()" onkeydown="if(event.key==='Enter')searchDict()">
         <button class="btn btn-secondary btn-sm" onclick="searchDict()" style="white-space:nowrap">🔍 검색</button>
       </div>
-      <input class="vocab-input" id="vi-read" placeholder="읽기 (예: たべる) — 검색 가능">
-      <input class="vocab-input" id="vi-mean" placeholder="뜻 — 영어로 입력하면 검색 가능 (예: eat)">
+      <input class="vocab-input" id="vi-read" placeholder="읽기 (예: たべる) — 검색 가능" onkeydown="if(event.key==='Enter')searchDict()">
+      <input class="vocab-input" id="vi-mean" placeholder="뜻 (한국어/영어 검색 가능)" onkeydown="if(event.key==='Enter')searchDict()">
       <div id="dict-loading" class="hidden" style="text-align:center;color:var(--text2);font-size:13px;padding:10px">검색 중...</div>
       <div id="dict-error" class="hidden" style="color:var(--accent);font-size:13px;margin-bottom:8px"></div>
       <div id="dict-results" class="hidden">
@@ -367,13 +367,17 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
     <div class="timer-bar"><div class="timer-fill" id="pkf-timer" style="width:100%"></div></div>
     <div class="flash-card pop" id="pkf-card">
       <div class="flash-char" id="pkf-char">あ</div>
-      <div class="flash-sub"><span id="pkf-type-badge" style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:12px;margin-bottom:6px;color:var(--accent2)"></span><br>읽어보세요</div>
+      <div class="flash-sub"><span id="pkf-type-badge" style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:12px;margin-bottom:6px;color:var(--accent2)"></span><br>로마자로 입력하세요</div>
       <button class="speak-btn" id="speak-pkf" onclick="speak(document.getElementById('pkf-char').textContent)" style="margin:12px auto 0" title="발음 듣기">🔊</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <input class="vocab-input" id="pkf-input" placeholder="로마자 입력 (예: a, ka, shi...)" style="margin-bottom:0;flex:1" onkeydown="if(event.key==='Enter')checkKanaFlash()">
+      <button class="btn btn-primary btn-sm" onclick="checkKanaFlash()" style="flex-shrink:0">확인</button>
     </div>
     <div class="answer-box hidden" id="pkf-answer"></div>
     <div class="action-row hidden" id="pkf-btns">
-      <button class="btn btn-secondary" onclick="kanaFlashNext(false)">❌ 틀림</button>
-      <button class="btn btn-success" onclick="kanaFlashNext(true)">✅ 맞음</button>
+      <button class="btn btn-secondary" onclick="kanaFlashNext(false)">❌ 다음</button>
+      <button class="btn btn-success" onclick="kanaFlashNext(true)">✅ 다음</button>
     </div>
   </div>
 </div>
@@ -488,15 +492,18 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
 <div class="panel" id="panel-kanji-flash">
   <div class="panel-header">
     <button class="panel-back" onclick="closePanel('panel-kanji-flash',true)">←</button>
-    <span class="panel-title">플래시 테스트</span>
+    <span class="panel-title">한자 플래시</span>
     <span class="panel-score" id="pkfl-score">0 / 0</span>
   </div>
   <div class="panel-body">
-    <div class="timer-bar"><div class="timer-fill" id="pkfl-timer" style="width:100%"></div></div>
     <div class="flash-card pop" id="pkfl-card">
       <div class="flash-char kanji-font" id="pkfl-char">漢</div>
-      <div class="flash-sub">읽어보세요</div>
+      <div class="flash-sub">읽기를 입력하세요 (히라가나 또는 로마자)</div>
       <button class="speak-btn" onclick="speakKanjiItem(state.kanjiFlash.items[state.kanjiFlash.idx], this)" style="margin:12px auto 0" title="발음 듣기">🔊</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <input class="vocab-input" id="pkfl-input" placeholder="히라가나 또는 로마자" style="margin-bottom:0;flex:1" onkeydown="if(event.key==='Enter')checkKanjiFlash()">
+      <button class="btn btn-primary btn-sm" onclick="checkKanjiFlash()" style="flex-shrink:0">확인</button>
     </div>
     <div class="hidden" id="pkfl-answer">
       <div style="display:flex;gap:10px;justify-content:center;margin-bottom:8px">
@@ -512,8 +519,8 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
       <div style="background:var(--surface2);border-radius:12px;padding:10px 16px;text-align:center;border:1px solid var(--border);font-size:16px;color:var(--text2)" id="pkfl-meaning"></div>
     </div>
     <div class="action-row hidden" id="pkfl-btns">
-      <button class="btn btn-secondary" onclick="kanjiFlashNext(false)">❌ 틀림</button>
-      <button class="btn btn-success" onclick="kanjiFlashNext(true)">✅ 맞음</button>
+      <button class="btn btn-secondary" onclick="kanjiFlashNext(false)">❌ 다음</button>
+      <button class="btn btn-success" onclick="kanjiFlashNext(true)">✅ 다음</button>
     </div>
   </div>
 </div>
@@ -559,31 +566,23 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
     <span class="panel-score" id="pvt-score">0 / 0</span>
   </div>
   <div class="panel-body">
-    <div class="timer-bar"><div class="timer-fill" id="pvt-timer" style="width:100%"></div></div>
     <div class="flash-card">
       <div class="flash-sub" id="pvt-label" style="margin-bottom:12px"></div>
       <div id="pvt-q" style="font-size:36px;font-weight:700;line-height:1.3"></div>
     </div>
-    <div class="canvas-wrap hidden" id="pvt-canvas-wrap">
-      <canvas id="cv-vocab" height="160"></canvas>
-      <div class="canvas-toolbar">
-        <div class="color-dot active" style="background:#f0f0f0" onclick="setDrawColor('cv-vocab','#f0f0f0',this)"></div>
-        <div style="flex:1"></div>
-        <button class="btn btn-secondary btn-sm" onclick="clearCanvas('cv-vocab')">지우기</button>
-      </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <input class="vocab-input" id="pvt-input" placeholder="정답을 입력하세요" style="margin-bottom:0;flex:1" onkeydown="if(event.key==='Enter')checkVocabAnswer()">
+      <button class="btn btn-primary btn-sm" onclick="checkVocabAnswer()" style="flex-shrink:0">확인</button>
     </div>
     <div class="answer-box hidden" id="pvt-answer"></div>
     <div style="text-align:center;margin-top:-8px;margin-bottom:8px" id="pvt-speak-wrap" class="hidden">
       <button class="speak-btn" onclick="speakVocabAnswer()" title="발음 듣기">🔊</button>
     </div>
     <div class="action-row hidden" id="pvt-flash-btns">
-      <button class="btn btn-secondary" onclick="vocabNext(false)">❌ 틀림</button>
-      <button class="btn btn-success" onclick="vocabNext(true)">✅ 맞음</button>
+      <button class="btn btn-secondary" onclick="vocabNext(false)">❌ 다음</button>
+      <button class="btn btn-success" onclick="vocabNext(true)">✅ 다음</button>
     </div>
-    <div class="action-row hidden" id="pvt-write-btns">
       <button class="btn btn-secondary" onclick="showVocabAnswer()">정답 보기</button>
-      <button class="btn btn-primary" onclick="nextVocabWrite()">다음 →</button>
-    </div>
   </div>
 </div>
 
@@ -1921,8 +1920,9 @@ let state = {
   drawColors:{},
   selectedGrade:'초1',
   _editIdx:-1,
+  itemStats:{}, // {key: {total:0, correct:0}} 문제별 통계
 };
-try{const s=JSON.parse(localStorage.getItem('jp-master')||'{}');if(s.stats)state.stats=s.stats;}catch(e){}
+try{const s=JSON.parse(localStorage.getItem('jp-master')||'{}');if(s.stats)state.stats=s.stats;if(s.itemStats)state.itemStats=s.itemStats;}catch(e){}
 
 // ============================================================
 // FIREBASE USER & 데이터 동기화
@@ -2013,8 +2013,28 @@ async function saveToFirebase() {
 }
 
 function save() {
-  try { localStorage.setItem('jp-master', JSON.stringify({stats: state.stats})); } catch(e) {}
+  try { localStorage.setItem('jp-master', JSON.stringify({stats: state.stats, itemStats: state.itemStats})); } catch(e) {}
   saveToFirebase();
+}
+// 문제별 통계 기록
+function recordItemStat(key, ok){
+  if(!state.itemStats[key]) state.itemStats[key]={total:0,correct:0};
+  state.itemStats[key].total++;
+  if(ok) state.itemStats[key].correct++;
+}
+// 오답률 기반 가중치 셔플 (10회 이상 데이터 있을 때만 적용)
+function weightedShuffle(items, keyFn){
+  return items.map(item=>{
+    const key=keyFn(item);
+    const stat=state.itemStats[key];
+    // 데이터 없거나 10회 미만이면 weight=1
+    let weight=1;
+    if(stat&&stat.total>=10){
+      const errRate=1-(stat.correct/stat.total);
+      weight=1+errRate*3; // 오답률 높을수록 최대 4배
+    }
+    return {item,weight,sort:Math.random()*weight};
+  }).sort((a,b)=>b.sort-a.sort).map(x=>x.item);
 }
 
 function recordAnswer(ok) {
@@ -2123,8 +2143,9 @@ function buildKanaItems(chipId){
 }
 
 function startKanaFlash(){
-  const items=buildKanaItems('kana-flash-chips');
+  let items=buildKanaItems('kana-flash-chips');
   if(!items.length)return alert('히라가나 또는 카타카나를 선택하세요.');
+  items=weightedShuffle(items,i=>i.char);
   clearTimeout(state.kanaFlash.timer);
   state.kanaFlash={items,idx:0,correct:0,total:0,timer:null};
   openPanel('panel-kana-flash');
@@ -2140,24 +2161,43 @@ function showKanaFlashCard(){
   document.getElementById('pkf-answer').classList.add('hidden');
   document.getElementById('pkf-btns').classList.add('hidden');
   document.getElementById('pkf-score').textContent=`${f.correct} / ${f.total}`;
-  const sec=parseInt(document.getElementById('kana-flash-time').value);
-  const fill=document.getElementById('pkf-timer');
-  fill.style.transition='none';fill.style.width='100%';
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{fill.style.transition=`width ${sec}s linear`;fill.style.width='0%';}));
-  clearTimeout(f.timer);
-  f.timer=setTimeout(()=>{
-    document.getElementById('pkf-answer').textContent=item.rom;
-    document.getElementById('pkf-answer').classList.remove('hidden');
+  const inp=document.getElementById('pkf-input');
+  inp.value='';inp.disabled=false;
+  setTimeout(()=>inp.focus(),100);
+}
+
+function checkKanaFlash(){
+  const f=state.kanaFlash;
+  if(f.idx>=f.items.length)return;
+  const item=f.items[f.idx];
+  const inp=document.getElementById('pkf-input');
+  const answer=inp.value.trim().toLowerCase();
+  if(!answer)return;
+  inp.disabled=true;
+  // 정답 판별: 로마자 정답
+  const correct=answer===item.rom.toLowerCase();
+  recordItemStat(item.char, correct);
+  recordAnswer(correct);
+  // 정답 표시
+  const ansEl=document.getElementById('pkf-answer');
+  ansEl.textContent=`정답: ${item.rom}`;
+  ansEl.style.color=correct?'var(--accent3)':'var(--accent)';
+  ansEl.classList.remove('hidden');
+  if(correct){
+    state.kanaFlash.correct++;
+    state.kanaFlash.total++;
+    // 정답이면 1초 후 자동으로 다음
+    setTimeout(()=>kanaFlashNext(true),900);
+  }else{
+    state.kanaFlash.total++;
     document.getElementById('pkf-btns').classList.remove('hidden');
     speakText(item.char);
-  },sec*1000);
+  }
 }
 
 function kanaFlashNext(ok){
-  clearTimeout(state.kanaFlash.timer);
   recordAnswer(ok);
-  state.kanaFlash.correct+=ok?1:0;
-  state.kanaFlash.total++;
+  if(ok&&state.kanaFlash.total>0)state.kanaFlash.correct=Math.max(0,state.kanaFlash.correct);
   state.kanaFlash.idx++;
   showKanaFlashCard();
 }
@@ -2263,8 +2303,7 @@ function prevKanjiTrace(){const s=state.kanjiTrace;if(s.idx>0){s.idx--;showKanji
 // KANJI FLASH
 // ============================================================
 function startKanjiFlash(){
-  const items=shuffle(getKanjiItems());
-  clearTimeout(state.kanjiFlash.timer);
+  let items=weightedShuffle(getKanjiItems(),i=>i.k);
   state.kanjiFlash={grade:state.selectedGrade,items,idx:0,correct:0,total:0,timer:null};
   openPanel('panel-kanji-flash');
   showKanjiFlashCard();
@@ -2277,26 +2316,40 @@ function showKanjiFlashCard(){
   document.getElementById('pkfl-answer').classList.add('hidden');
   document.getElementById('pkfl-btns').classList.add('hidden');
   document.getElementById('pkfl-score').textContent=`${f.correct} / ${f.total}`;
-  const sec=parseInt(document.getElementById('kanji-flash-time').value);
-  const fill=document.getElementById('pkfl-timer');
-  fill.style.transition='none';fill.style.width='100%';
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{fill.style.transition=`width ${sec}s linear`;fill.style.width='0%';}));
-  clearTimeout(f.timer);
-  f.timer=setTimeout(()=>{
-    const item2=state.kanjiFlash.items[state.kanjiFlash.idx];
-    document.getElementById('pkfl-kun').textContent=item2.kun||'-';
-    document.getElementById('pkfl-on').textContent=item2.on||'-';
-    document.getElementById('pkfl-meaning').textContent=item2.m;
-    document.getElementById('pkfl-answer').classList.remove('hidden');
+  const inp=document.getElementById('pkfl-input');
+  inp.value='';inp.disabled=false;
+  setTimeout(()=>inp.focus(),100);
+}
+function checkKanjiFlash(){
+  const f=state.kanjiFlash;
+  if(f.idx>=f.items.length)return;
+  const item=f.items[f.idx];
+  const inp=document.getElementById('pkfl-input');
+  const answer=inp.value.trim();
+  if(!answer)return;
+  inp.disabled=true;
+  // 정답: 훈독 또는 음독 중 하나라도 맞으면 정답
+  const allReadings=[...(item.kun||'').split('・'),...(item.on||'').split('・')].map(r=>r.trim().toLowerCase()).filter(r=>r);
+  const correct=allReadings.includes(answer.toLowerCase());
+  recordItemStat(item.k, correct);
+  recordAnswer(correct);
+  // 정답 표시
+  document.getElementById('pkfl-kun').textContent=item.kun||'-';
+  document.getElementById('pkfl-on').textContent=item.on||'-';
+  document.getElementById('pkfl-meaning').textContent=item.m;
+  document.getElementById('pkfl-answer').classList.remove('hidden');
+  if(correct){
+    state.kanjiFlash.correct++;
+    state.kanjiFlash.total++;
+    speakKanjiItem(item,null);
+    setTimeout(()=>kanjiFlashNext(true),900);
+  }else{
+    state.kanjiFlash.total++;
     document.getElementById('pkfl-btns').classList.remove('hidden');
-    speakKanjiItem(item2, null);
-  },sec*1000);
+    speakKanjiItem(item,null);
+  }
 }
 function kanjiFlashNext(ok){
-  clearTimeout(state.kanjiFlash.timer);
-  recordAnswer(ok);
-  state.kanjiFlash.correct+=ok?1:0;
-  state.kanjiFlash.total++;
   state.kanjiFlash.idx++;
   showKanjiFlashCard();
 }
@@ -2421,7 +2474,9 @@ function selectDict(i){
   const r=document.getElementById('dict-result-list')._data[i];
   document.getElementById('vi-jp').value=r.jp;
   document.getElementById('vi-read').value=r.read;
-  document.getElementById('vi-mean').value=r.mean;
+  // 뜻 칸에 한국어가 이미 입력돼 있으면 그대로 유지, 아니면 영어 뜻 사용
+  const currentMean=document.getElementById('vi-mean').value.trim();
+  if(!currentMean) document.getElementById('vi-mean').value=r.mean;
   clearDictResults();
 }
 function clearDictResults(){
@@ -2430,12 +2485,11 @@ function clearDictResults(){
 function clearSearchResults(){clearDictResults();}
 function startVocabTest(){
   if(!state.vocab.length)return alert('단어장이 비어있어요.');
-  const items=shuffle([...state.vocab]);
+  const items=weightedShuffle([...state.vocab],v=>v.jp);
   clearTimeout(state.vocabTest.timer);
   state.vocabTest={mode:state.vocabTest.mode,items,idx:0,correct:0,total:0,timer:null};
   openPanel('panel-vocab-test');
   showVocabCard();
-  setTimeout(()=>initCanvas('cv-vocab'),100);
 }
 function showVocabCard(){
   const t=state.vocabTest;
@@ -2444,38 +2498,57 @@ function showVocabCard(){
   document.getElementById('pvt-score').textContent=`${t.correct} / ${t.idx}`;
   document.getElementById('pvt-answer').classList.add('hidden');
   document.getElementById('pvt-flash-btns').classList.add('hidden');
-  document.getElementById('pvt-write-btns').classList.add('hidden');
-  document.getElementById('pvt-canvas-wrap').classList.add('hidden');
   document.getElementById('pvt-speak-wrap').classList.add('hidden');
+  const inp=document.getElementById('pvt-input');
+  inp.value='';inp.disabled=false;
   if(t.mode==='jp'){
-    document.getElementById('pvt-label').textContent='뜻을 맞춰보세요';
+    document.getElementById('pvt-label').textContent='뜻을 입력하세요';
     document.getElementById('pvt-q').textContent=item.jp+(item.read?`\n${item.read}`:'');
-    const sec=parseInt(document.getElementById('vocab-flash-time').value);
-    const fill=document.getElementById('pvt-timer');
-    fill.style.transition='none';fill.style.width='100%';
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{fill.style.transition=`width ${sec}s linear`;fill.style.width='0%';}));
-    clearTimeout(t.timer);
-    t.timer=setTimeout(()=>{
-      document.getElementById('pvt-answer').textContent=item.mean;
-      document.getElementById('pvt-answer').classList.remove('hidden');
-      document.getElementById('pvt-flash-btns').classList.remove('hidden');
-      document.getElementById('pvt-speak-wrap').classList.remove('hidden');
-      speakText(item.jp);
-    },sec*1000);
+    inp.placeholder='한국어 뜻 입력';
   }else{
-    document.getElementById('pvt-timer').style.width='100%';
-    document.getElementById('pvt-label').textContent='일본어로 써보세요';
+    document.getElementById('pvt-label').textContent='일본어를 입력하세요';
     document.getElementById('pvt-q').textContent=item.mean;
-    document.getElementById('pvt-canvas-wrap').classList.remove('hidden');
-    document.getElementById('pvt-write-btns').classList.remove('hidden');
-    clearCanvas('cv-vocab');
+    inp.placeholder='일본어 또는 히라가나 입력';
+  }
+  setTimeout(()=>inp.focus(),100);
+}
+function checkVocabAnswer(){
+  const t=state.vocabTest;
+  if(t.idx>=t.items.length)return;
+  const item=t.items[t.idx];
+  const inp=document.getElementById('pvt-input');
+  const answer=inp.value.trim();
+  if(!answer)return;
+  inp.disabled=true;
+  let correct=false;
+  const ansEl=document.getElementById('pvt-answer');
+  if(t.mode==='jp'){
+    // 뜻 맞추기: 입력한 뜻이 저장된 뜻에 포함되면 정답
+    const stored=(item.mean||'').toLowerCase();
+    const ans=answer.toLowerCase();
+    correct=stored.includes(ans)||ans.includes(stored.split(/[,\/\s]/)[0].trim());
+    ansEl.textContent=`정답: ${item.mean}`;
+  }else{
+    // 일본어 맞추기: jp, read, 훈독/음독 중 하나라도 맞으면 정답
+    const answers=[item.jp,item.read].filter(Boolean).map(s=>s.toLowerCase());
+    correct=answers.some(a=>a===answer.toLowerCase()||a.startsWith(answer.toLowerCase()));
+    ansEl.textContent=`정답: ${item.jp}${item.read?' ('+item.read+')':''}`;
+    if(correct) speakText(item.jp);
+  }
+  ansEl.style.color=correct?'var(--accent3)':'var(--accent)';
+  ansEl.classList.remove('hidden');
+  document.getElementById('pvt-speak-wrap').classList.remove('hidden');
+  recordItemStat(item.jp, correct);
+  recordAnswer(correct);
+  if(correct){
+    t.correct++;t.total++;
+    setTimeout(()=>vocabNext(true),900);
+  }else{
+    t.total++;
+    document.getElementById('pvt-flash-btns').classList.remove('hidden');
   }
 }
 function vocabNext(ok){
-  clearTimeout(state.vocabTest.timer);
-  recordAnswer(ok);
-  state.vocabTest.correct+=ok?1:0;
-  state.vocabTest.total++;
   state.vocabTest.idx++;
   showVocabCard();
 }
