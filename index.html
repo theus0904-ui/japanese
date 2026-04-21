@@ -2397,8 +2397,11 @@ async function searchDict(){
   document.getElementById('dict-loading').classList.remove('hidden');
   document.getElementById('dict-results').classList.add('hidden');
   document.getElementById('dict-error').classList.add('hidden');
+  const jishoUrl=`https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(q)}`;
+  const proxyUrl=`https://corsproxy.io/?${encodeURIComponent(jishoUrl)}`;
   try{
-    const res=await fetch(`https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(q)}`);
+    const res=await fetch(proxyUrl);
+    if(!res.ok) throw new Error('HTTP '+res.status);
     const data=await res.json();
     document.getElementById('dict-loading').classList.add('hidden');
     if(!data.data||!data.data.length){
@@ -2417,7 +2420,7 @@ async function searchDict(){
   }catch(e){
     document.getElementById('dict-loading').classList.add('hidden');
     const errEl=document.getElementById('dict-error');
-    errEl.textContent='검색 오류. 인터넷 연결을 확인하세요.';errEl.classList.remove('hidden');
+    errEl.textContent='검색 오류. 잠시 후 다시 시도해 주세요.';errEl.classList.remove('hidden');
   }
 }
 function selectDict(i){
