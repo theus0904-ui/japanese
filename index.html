@@ -316,11 +316,11 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
     <div class="card">
       <div class="card-title" id="vocab-form-title">단어 추가 — 하나만 입력해도 사전 검색 가능</div>
       <div style="display:flex;gap:8px;margin-bottom:8px">
-        <input class="vocab-input" id="vi-jp" placeholder="일본어 (예: 食べる)" style="margin-bottom:0;flex:1" oninput="clearDictResults()" onkeydown="if(event.key==='Enter')searchDict()">
+        <input class="vocab-input" id="vi-jp" placeholder="일본어 또는 읽기로 검색 가능" style="margin-bottom:0;flex:1" oninput="clearDictResults()" onkeydown="if(event.key==='Enter')searchDict()">
         <button class="btn btn-secondary btn-sm" onclick="searchDict()" style="white-space:nowrap">🔍 검색</button>
       </div>
-      <input class="vocab-input" id="vi-read" placeholder="읽기 (예: たべる)">
-      <input class="vocab-input" id="vi-mean" placeholder="뜻 (예: 먹다)">
+      <input class="vocab-input" id="vi-read" placeholder="읽기 (예: たべる) — 검색 가능">
+      <input class="vocab-input" id="vi-mean" placeholder="뜻 — 영어로 입력하면 검색 가능 (예: eat)">
       <div id="dict-loading" class="hidden" style="text-align:center;color:var(--text2);font-size:13px;padding:10px">검색 중...</div>
       <div id="dict-error" class="hidden" style="color:var(--accent);font-size:13px;margin-bottom:8px"></div>
       <div id="dict-results" class="hidden">
@@ -2393,7 +2393,7 @@ function renderVocab(){
 }
 async function searchDict(){
   const q=document.getElementById('vi-jp').value.trim()||document.getElementById('vi-read').value.trim()||document.getElementById('vi-mean').value.trim();
-  if(!q){alert('검색어를 입력해 주세요');return;}
+  if(!q){alert('일본어, 읽기, 또는 영어 뜻을 입력 후 검색해 주세요.');return;}
   document.getElementById('dict-loading').classList.remove('hidden');
   document.getElementById('dict-results').classList.add('hidden');
   document.getElementById('dict-error').classList.add('hidden');
