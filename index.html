@@ -2393,53 +2393,47 @@ function renderVocab(){
 }
 async function searchDict(){
   const q=document.getElementById('vi-jp').value.trim()||document.getElementById('vi-read').value.trim()||document.getElementById('vi-mean').value.trim();
-  if(!q){alert('일본어, 읽기, 또는 영어 뜻을 입력 후 검색해 주세요.');return;}
+  if(!q){alert('검색어를 입력해 주세요.');return;}
   document.getElementById('dict-loading').classList.remove('hidden');
   document.getElementById('dict-results').classList.add('hidden');
   document.getElementById('dict-error').classList.add('hidden');
-  const jishoUrl=`https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(q)}`;
-  // allorigins /get 방식 먼저 (응답: {contents:"..."})
-  let data=null;
   try{
-    const res=await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(jishoUrl)}`,{signal:AbortSignal.timeout(10000)});
-    if(res.ok){
-      const raw=await res.json();
-      if(raw.contents) data=JSON.parse(raw.contents);
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{
+          role:'user',
+          content:`일본어 단어 "${q}"에 대해 검색해줘. 아래 JSON 형식으로만 답해줘. 다른 텍스트는 절대 쓰지 마.
+[
+  {"jp":"한자/단어","read":"히라가나 읽기","mean":"영어뜻"},
+  {"jp":"단어2","read":"읽기2","mean":"영어뜻2"}
+]
+최대 5개. 검색어가 한국어면 그 의미의 일본어 단어들을 알려줘. 일본어/히라가나면 그 단어와 관련 단어들을 알려줘.`
+        }]
+      })
+    });
+    const data=await res.json();
+    document.getElementById('dict-loading').classList.add('hidden');
+    const text=data.content?.[0]?.text||'';
+    const clean=text.replace(/```json|```/g,'').trim();
+    const results=JSON.parse(clean);
+    if(!results.length){
+      const errEl=document.getElementById('dict-error');
+      errEl.textContent='검색 결과가 없어요';errEl.classList.remove('hidden');return;
     }
-  }catch(e){}
-  // 실패시 allorigins /raw 시도
-  if(!data?.data){
-    try{
-      const res=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(jishoUrl)}`,{signal:AbortSignal.timeout(10000)});
-      if(res.ok) data=await res.json();
-    }catch(e){}
-  }
-  // 실패시 corsproxy 시도
-  if(!data?.data){
-    try{
-      const res=await fetch(`https://corsproxy.io/?${encodeURIComponent(jishoUrl)}`,{signal:AbortSignal.timeout(10000)});
-      if(res.ok) data=await res.json();
-    }catch(e){}
-  }
-  document.getElementById('dict-loading').classList.add('hidden');
-  if(!data?.data){
+    const list=document.getElementById('dict-result-list');
+    list.innerHTML=results.map((r,i)=>`<div class="dict-item" onclick="selectDict(${i})"><div class="dict-item-jp">${r.jp}</div><div class="dict-item-read">${r.read}</div><div class="dict-item-mean">${r.mean}</div></div>`).join('');
+    list._data=results;
+    document.getElementById('dict-results').classList.remove('hidden');
+  }catch(e){
+    document.getElementById('dict-loading').classList.add('hidden');
     const errEl=document.getElementById('dict-error');
-    errEl.textContent='검색 오류. 잠시 후 다시 시도해 주세요.';
-    errEl.classList.remove('hidden');return;
+    errEl.textContent='검색 오류가 발생했어요.';errEl.classList.remove('hidden');
+    console.error(e);
   }
-  if(!data.data.length){
-    const errEl=document.getElementById('dict-error');
-    errEl.textContent='검색 결과가 없어요';errEl.classList.remove('hidden');return;
-  }
-  const results=data.data.slice(0,6).map(e=>({
-    jp:e.japanese[0]?.word||e.japanese[0]?.reading||'',
-    read:e.japanese[0]?.reading||'',
-    mean:e.senses[0]?.english_definitions?.slice(0,3).join(', ')||''
-  })).filter(r=>r.jp);
-  const list=document.getElementById('dict-result-list');
-  list.innerHTML=results.map((r,i)=>`<div class="dict-item" onclick="selectDict(${i})"><div class="dict-item-jp">${r.jp}</div><div class="dict-item-read">${r.read}</div><div class="dict-item-mean">${r.mean}</div></div>`).join('');
-  list._data=results;
-  document.getElementById('dict-results').classList.remove('hidden');
 }
 function selectDict(i){
   const r=document.getElementById('dict-result-list')._data[i];
