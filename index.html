@@ -2398,28 +2398,10 @@ async function searchDict(){
   document.getElementById('dict-results').classList.add('hidden');
   document.getElementById('dict-error').classList.add('hidden');
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        messages:[{
-          role:'user',
-          content:`일본어 단어 "${q}"에 대해 검색해줘. 아래 JSON 형식으로만 답해줘. 다른 텍스트는 절대 쓰지 마.
-[
-  {"jp":"한자/단어","read":"히라가나 읽기","mean":"영어뜻"},
-  {"jp":"단어2","read":"읽기2","mean":"영어뜻2"}
-]
-최대 5개. 검색어가 한국어면 그 의미의 일본어 단어들을 알려줘. 일본어/히라가나면 그 단어와 관련 단어들을 알려줘.`
-        }]
-      })
-    });
-    const data=await res.json();
+    const res=await fetch(`https://still-band-4f6d.theus0904.workers.dev?q=${encodeURIComponent(q)}`);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const results=await res.json();
     document.getElementById('dict-loading').classList.add('hidden');
-    const text=data.content?.[0]?.text||'';
-    const clean=text.replace(/```json|```/g,'').trim();
-    const results=JSON.parse(clean);
     if(!results.length){
       const errEl=document.getElementById('dict-error');
       errEl.textContent='검색 결과가 없어요';errEl.classList.remove('hidden');return;
