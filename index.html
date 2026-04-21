@@ -364,12 +364,23 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
     <span class="panel-score" id="pkf-score">0 / 0</span>
   </div>
   <div class="panel-body">
-    <div class="timer-bar"><div class="timer-fill" id="pkf-timer" style="width:100%"></div></div>
     <div class="flash-card pop" id="pkf-card">
       <div class="flash-char" id="pkf-char">あ</div>
-      <div class="flash-sub"><span id="pkf-type-badge" style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:12px;margin-bottom:6px;color:var(--accent2)"></span><br>로마자로 입력하세요</div>
+      <div class="flash-sub"><span id="pkf-type-badge" style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:12px;margin-bottom:6px;color:var(--accent2)"></span><br>써보거나 로마자로 입력하세요</div>
       <button class="speak-btn" id="speak-pkf" onclick="speak(document.getElementById('pkf-char').textContent)" style="margin:12px auto 0" title="발음 듣기">🔊</button>
     </div>
+    <!-- 손글씨 캔버스 -->
+    <div class="canvas-wrap" id="pkf-canvas-wrap">
+      <canvas id="cv-pkf" height="180"></canvas>
+      <div class="canvas-toolbar">
+        <div class="color-dot active" style="background:#f0f0f0" onclick="setDrawColor('cv-pkf','#f0f0f0',this)"></div>
+        <div class="color-dot" style="background:#e94560" onclick="setDrawColor('cv-pkf','#e94560',this)"></div>
+        <div style="flex:1"></div>
+        <button class="btn btn-secondary btn-sm" onclick="clearCanvas('cv-pkf')">지우기</button>
+        <button class="btn btn-warn btn-sm" onclick="ocrCheck('cv-pkf','kana')" style="margin-left:4px">✍️ 인식</button>
+      </div>
+    </div>
+    <!-- 자판 입력 -->
     <div style="display:flex;gap:8px;margin-top:4px">
       <input class="vocab-input" id="pkf-input" placeholder="로마자 입력 (예: a, ka, shi...)" style="margin-bottom:0;flex:1" onkeydown="if(event.key==='Enter')checkKanaFlash()">
       <button class="btn btn-primary btn-sm" onclick="checkKanaFlash()" style="flex-shrink:0">확인</button>
@@ -498,9 +509,21 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
   <div class="panel-body">
     <div class="flash-card pop" id="pkfl-card">
       <div class="flash-char kanji-font" id="pkfl-char">漢</div>
-      <div class="flash-sub">읽기를 입력하세요 (히라가나 또는 로마자)</div>
+      <div class="flash-sub">읽기를 써보거나 히라가나/로마자로 입력하세요</div>
       <button class="speak-btn" onclick="speakKanjiItem(state.kanjiFlash.items[state.kanjiFlash.idx], this)" style="margin:12px auto 0" title="발음 듣기">🔊</button>
     </div>
+    <!-- 손글씨 캔버스 -->
+    <div class="canvas-wrap" id="pkfl-canvas-wrap">
+      <canvas id="cv-pkfl" height="180"></canvas>
+      <div class="canvas-toolbar">
+        <div class="color-dot active" style="background:#f0f0f0" onclick="setDrawColor('cv-pkfl','#f0f0f0',this)"></div>
+        <div class="color-dot" style="background:#e94560" onclick="setDrawColor('cv-pkfl','#e94560',this)"></div>
+        <div style="flex:1"></div>
+        <button class="btn btn-secondary btn-sm" onclick="clearCanvas('cv-pkfl')">지우기</button>
+        <button class="btn btn-warn btn-sm" onclick="ocrCheck('cv-pkfl','kanji')" style="margin-left:4px">✍️ 인식</button>
+      </div>
+    </div>
+    <!-- 자판 입력 -->
     <div style="display:flex;gap:8px;margin-top:4px">
       <input class="vocab-input" id="pkfl-input" placeholder="히라가나 또는 로마자" style="margin-bottom:0;flex:1" onkeydown="if(event.key==='Enter')checkKanjiFlash()">
       <button class="btn btn-primary btn-sm" onclick="checkKanjiFlash()" style="flex-shrink:0">확인</button>
@@ -2163,7 +2186,67 @@ function showKanaFlashCard(){
   document.getElementById('pkf-score').textContent=`${f.correct} / ${f.total}`;
   const inp=document.getElementById('pkf-input');
   inp.value='';inp.disabled=false;
-  setTimeout(()=>inp.focus(),100);
+  clearCanvas('cv-pkf');
+  setTimeout(()=>{initCanvas('cv-pkf');inp.focus();},100);
+}
+
+// ============================================================
+// OCR - Google Cloud Vision API
+// ============================================================
+const WORKER_URL = 'https://still-band-4f6d.theus0904.workers.dev';
+
+async function ocrCheck(canvasId, mode){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  // 캔버스가 비어있는지 확인
+  const ctx = canvas.getContext('2d');
+  const data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  const hasContent = Array.from(data).some((v,i)=>i%4!==3&&v>0);
+  if(!hasContent){ alert('먼저 글자를 써주세요!'); return; }
+
+  // 흰 배경으로 합성한 이미지 생성 (OCR 인식률 향상)
+  const tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width = canvas.width;
+  tmpCanvas.height = canvas.height;
+  const tmpCtx = tmpCanvas.getContext('2d');
+  tmpCtx.fillStyle = '#ffffff';
+  tmpCtx.fillRect(0,0,tmpCanvas.width,tmpCanvas.height);
+  tmpCtx.drawImage(canvas,0,0);
+
+  const base64 = tmpCanvas.toDataURL('image/png').split(',')[1];
+
+  // 인식 중 표시
+  const btn = event.target;
+  const origText = btn.textContent;
+  btn.textContent = '인식 중...';
+  btn.disabled = true;
+
+  try{
+    const res = await fetch(`${WORKER_URL}/ocr`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({image: base64}),
+    });
+    const data2 = await res.json();
+    const recognized = (data2.text || '').trim();
+
+    if(!recognized){ alert('글자를 인식하지 못했어요. 더 크고 선명하게 써보세요!'); return; }
+
+    // 인식된 텍스트를 입력창에 넣고 자동 확인
+    if(mode === 'kana'){
+      document.getElementById('pkf-input').value = recognized;
+      checkKanaFlash();
+    } else if(mode === 'kanji'){
+      document.getElementById('pkfl-input').value = recognized;
+      checkKanjiFlash();
+    }
+  } catch(e){
+    alert('OCR 오류가 발생했어요. 잠시 후 다시 시도해 주세요.');
+    console.error(e);
+  } finally{
+    btn.textContent = origText;
+    btn.disabled = false;
+  }
 }
 
 function checkKanaFlash(){
@@ -2318,7 +2401,8 @@ function showKanjiFlashCard(){
   document.getElementById('pkfl-score').textContent=`${f.correct} / ${f.total}`;
   const inp=document.getElementById('pkfl-input');
   inp.value='';inp.disabled=false;
-  setTimeout(()=>inp.focus(),100);
+  clearCanvas('cv-pkfl');
+  setTimeout(()=>{initCanvas('cv-pkfl');inp.focus();},100);
 }
 function checkKanjiFlash(){
   const f=state.kanjiFlash;
@@ -2713,7 +2797,7 @@ function init(){
     });
   }
   setTimeout(()=>{
-    ['cv-kana-write','cv-kanji-trace','cv-kanji-write','cv-vocab'].forEach(id=>{
+    ['cv-kana-write','cv-kanji-trace','cv-kanji-write','cv-vocab','cv-pkf','cv-pkfl'].forEach(id=>{
       const cv=document.getElementById(id);
       if(cv)cv.width=cv.offsetWidth||360;
     });
