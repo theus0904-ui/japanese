@@ -2529,41 +2529,16 @@ function renderVocab(){
   el.innerHTML=state.vocab.map((v,i)=>`<div class="vocab-item"><div class="vocab-jp">${v.jp}</div><div class="vocab-info"><div class="vocab-reading">${v.read||''}</div><div class="vocab-meaning">${v.mean}</div></div><button class="speak-btn" style="width:36px;height:36px;font-size:16px" onclick="speak('${v.jp.replace(/'/g,"\\'")}')">🔊</button><button class="speak-btn" style="width:36px;height:36px;font-size:16px;border-color:var(--accent2)" onclick="editVocab(${i})">✏️</button><button class="vocab-del" onclick="deleteVocab(${i})">🗑</button></div>`).join('');
 }
 async function searchDict(){
-  const jp=document.getElementById('vi-jp').value.trim();
-  const read=document.getElementById('vi-read').value.trim();
-  const mean=document.getElementById('vi-mean').value.trim();
-  const q=jp||read||mean;
+  const q=document.getElementById('vi-jp').value.trim()||document.getElementById('vi-read').value.trim()||document.getElementById('vi-mean').value.trim();
   if(!q){alert('검색어를 입력해 주세요.');return;}
   document.getElementById('dict-loading').classList.remove('hidden');
   document.getElementById('dict-results').classList.add('hidden');
   document.getElementById('dict-error').classList.add('hidden');
-
   try{
-    const isKorean=/[\uAC00-\uD7A3]/.test(q);
-    let searchQ=q;
-    let korMean=isKorean?q:'';
-
-    // 한국어면 영어로 번역 후 검색
-    if(isKorean){
-      const tRes=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=ko|en`);
-      const tData=await tRes.json();
-      searchQ=tData.responseData?.translatedText||q;
-    }
-
-    // Jisho 검색 (allorigins 프록시)
-    const jishoUrl=`https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(searchQ)}`;
-    const res=await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(jishoUrl)}`);
-    const raw=await res.json();
-    const data=JSON.parse(raw.contents);
-
+    const res=await fetch(`https://still-band-4f6d.theus0904.workers.dev?q=${encodeURIComponent(q)}`);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const results=await res.json();
     document.getElementById('dict-loading').classList.add('hidden');
-
-    const results=(data.data||[]).slice(0,6).map(e=>({
-      jp:e.japanese[0]?.word||e.japanese[0]?.reading||'',
-      read:e.japanese[0]?.reading||'',
-      mean:korMean||(e.senses[0]?.english_definitions||[]).slice(0,3).join(', '),
-    })).filter(r=>r.jp);
-
     if(!results.length){
       const errEl=document.getElementById('dict-error');
       errEl.textContent='검색 결과가 없어요';errEl.classList.remove('hidden');return;
