@@ -316,11 +316,11 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
     <div class="card">
       <div class="card-title" id="vocab-form-title">단어 추가 — 하나만 입력해도 사전 검색 가능</div>
       <div style="display:flex;gap:8px;margin-bottom:8px">
-        <input class="vocab-input" id="vi-jp" placeholder="일본어 또는 읽기로 검색 가능" style="margin-bottom:0;flex:1" oninput="clearDictResults();checkDuplicate()" onkeydown="if(event.key==='Enter')searchDict()">
+        <input class="vocab-input" id="vi-jp" placeholder="일본어 또는 읽기로 검색 가능" style="margin-bottom:0;flex:1" oninput="clearDictResults();checkDuplicate()" onkeydown="if(event.key==='Enter'){event.preventDefault();searchDict()}">
         <button class="btn btn-secondary btn-sm" onclick="searchDict()" style="white-space:nowrap">🔍 검색</button>
       </div>
-      <input class="vocab-input" id="vi-read" placeholder="읽기 (예: たべる) — 검색 가능" oninput="checkDuplicate()" onkeydown="if(event.key==='Enter')searchDict()">
-      <input class="vocab-input" id="vi-mean" placeholder="뜻 (한국어/영어 검색 가능)" oninput="checkDuplicate()" onkeydown="if(event.key==='Enter')searchDict()">
+      <input class="vocab-input" id="vi-read" placeholder="읽기 (예: たべる) — 검색 가능" oninput="checkDuplicate()" onkeydown="if(event.key==='Enter'){event.preventDefault();searchDict()}">
+      <input class="vocab-input" id="vi-mean" placeholder="뜻 (한국어/영어 검색 가능)" oninput="checkDuplicate()" onkeydown="if(event.key==='Enter'){event.preventDefault();searchDict()}">
       <select class="vocab-input" id="vi-cat" style="margin-bottom:8px;color:var(--text)">
         <option value="">카테고리 없음</option>
         <option value="1그룹동사">1그룹 동사 (う동사)</option>
@@ -351,11 +351,13 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
     <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
       <select id="vocab-filter-cat" onchange="renderVocab()" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;color:var(--text);font-size:13px">
         <option value="">전체 카테고리</option>
-        <option value="1그룹동사">1그룹 동사</option>
-        <option value="2그룹동사">2그룹 동사</option>
-        <option value="3그룹동사">3그룹 동사</option>
-        <option value="이형용사">이형용사</option>
-        <option value="나형용사">나형용사</option>
+        <option value="__verb__">동사 (전체)</option>
+        <option value="1그룹동사">ㄴ 1그룹 동사</option>
+        <option value="2그룹동사">ㄴ 2그룹 동사</option>
+        <option value="3그룹동사">ㄴ 3그룹 동사</option>
+        <option value="__adj__">형용사 (전체)</option>
+        <option value="이형용사">ㄴ 이형용사</option>
+        <option value="나형용사">ㄴ 나형용사</option>
         <option value="명사">명사</option>
         <option value="부사">부사</option>
         <option value="기타">기타</option>
@@ -2587,6 +2589,8 @@ function renderVocab(){
   const sort=document.getElementById('vocab-sort')?.value||'newest';
   let list=[...state.vocab].map((v,i)=>({...v,_origIdx:i}));
   if(filterCat==='__none__') list=list.filter(v=>!v.cat);
+  else if(filterCat==='__verb__') list=list.filter(v=>v.cat&&v.cat.includes('동사'));
+  else if(filterCat==='__adj__') list=list.filter(v=>v.cat&&v.cat.includes('형용사'));
   else if(filterCat) list=list.filter(v=>v.cat===filterCat);
   if(sort==='newest') list.sort((a,b)=>b.id-a.id);
   else if(sort==='oldest') list.sort((a,b)=>a.id-b.id);
