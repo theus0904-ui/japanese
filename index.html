@@ -321,7 +321,7 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
       </div>
       <input class="vocab-input" id="vi-read" placeholder="읽기 (예: たべる) — 검색 가능" oninput="checkDuplicate()" onkeydown="if(event.key==='Enter'){event.preventDefault();searchDict()}">
       <input class="vocab-input" id="vi-mean" placeholder="뜻 (한국어/영어 검색 가능)" oninput="checkDuplicate()" onkeydown="if(event.key==='Enter'){event.preventDefault();searchDict()}">
-      <select class="vocab-input" id="vi-cat" style="margin-bottom:8px;color:var(--text)">
+      <select class="vocab-input" id="vi-cat" tabindex="-1" style="margin-bottom:8px;color:var(--text)">
         <option value="">카테고리 없음</option>
         <option value="1그룹동사">1그룹 동사 (う동사)</option>
         <option value="2그룹동사">2그룹 동사 (る동사)</option>
