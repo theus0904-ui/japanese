@@ -2633,10 +2633,12 @@ function selectDict(i){
   const r=document.getElementById('dict-result-list')._data[i];
   document.getElementById('vi-jp').value=r.jp;
   document.getElementById('vi-read').value=r.read;
-  // 뜻 칸에 한국어가 이미 입력돼 있으면 그대로 유지, 아니면 영어 뜻 사용
   const currentMean=document.getElementById('vi-mean').value.trim();
   if(!currentMean) document.getElementById('vi-mean').value=r.mean;
+  // 카테고리 자동 설정
+  if(r.cat) document.getElementById('vi-cat').value=r.cat;
   clearDictResults();
+  checkDuplicate();
 }
 function clearDictResults(){
   ['dict-results','dict-error','dict-loading'].forEach(id=>document.getElementById(id).classList.add('hidden'));
