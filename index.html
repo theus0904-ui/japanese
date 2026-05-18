@@ -332,8 +332,9 @@ select{background:var(--surface2);color:var(--text);border:1px solid var(--borde
         <option value="부사">부사</option>
         <option value="기타">기타</option>
       </select>
-      <div id="duplicate-warn" class="hidden" style="background:var(--surface2);border:1px solid var(--accent2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--accent2);margin-bottom:8px">
-        ⚠️ 이미 저장된 단어예요: <span id="duplicate-info"></span>
+      <div id="duplicate-warn" class="hidden" style="background:var(--surface2);border:1px solid var(--accent2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--accent2);margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        <span>⚠️ 이미 저장된 단어예요: <span id="duplicate-info"></span></span>
+        <button class="btn btn-secondary btn-sm" id="duplicate-edit-btn" onclick="editDuplicate()" style="flex-shrink:0;margin-left:auto">✏️ 수정</button>
       </div>
       <div id="dict-loading" class="hidden" style="text-align:center;color:var(--text2);font-size:13px;padding:10px">검색 중...</div>
       <div id="dict-error" class="hidden" style="color:var(--accent);font-size:13px;margin-bottom:8px"></div>
@@ -2539,25 +2540,32 @@ function addVocab(){
   cancelVocabEdit();
   renderVocab();
 }
+let _duplicateIdx=-1;
 function checkDuplicate(){
   const jp=document.getElementById('vi-jp').value.trim();
   const read=document.getElementById('vi-read').value.trim();
-  const mean=document.getElementById('vi-mean').value.trim();
   const warn=document.getElementById('duplicate-warn');
   const info=document.getElementById('duplicate-info');
-  if(!jp&&!read&&!mean){warn.classList.add('hidden');return;}
-  const found=state.vocab.find(v=>{
+  if(!jp&&!read){warn.classList.add('hidden');_duplicateIdx=-1;return;}
+  const idx=state.vocab.findIndex(v=>{
     const jpMatch=jp&&(v.jp===jp||v.read===jp);
     const readMatch=read&&(v.read===read||v.jp===read);
-    const meanMatch=mean&&v.mean&&v.mean.includes(mean)&&mean.length>=2;
     return jpMatch||readMatch;
   });
-  if(found){
+  if(idx>=0){
+    const found=state.vocab[idx];
+    _duplicateIdx=idx;
     info.textContent=`${found.jp}${found.read?' ('+found.read+')':''} — ${found.mean}`;
     warn.classList.remove('hidden');
   }else{
+    _duplicateIdx=-1;
     warn.classList.add('hidden');
   }
+}
+function editDuplicate(){
+  if(_duplicateIdx<0)return;
+  cancelVocabEdit();
+  editVocab(_duplicateIdx);
 }
 function cancelVocabEdit(){
   ['vi-jp','vi-read','vi-mean'].forEach(id=>document.getElementById(id).value='');
